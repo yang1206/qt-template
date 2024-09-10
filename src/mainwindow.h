@@ -21,13 +21,14 @@ public:
     explicit mainwindow(QWidget *parent = nullptr);
     ~mainwindow() override;
 private slots:
-    void openBoard();    // 打开板卡的槽函数
-    void closeBoard();   // 关闭板卡的槽函数
-    void showBoardInfo();   // 显示板卡信息
+    void openBoard(); // 打开板卡的槽函数
+    void closeBoard(); // 关闭板卡的槽函数
+    void showBoardInfo(); // 显示板卡信息
 
 private:
     Ui::mainwindow *ui;
     BoardController m_boardController; // 添加板卡控制器
+    void setupChannel(); // 设置通道
 };
 
 

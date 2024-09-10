@@ -50,9 +50,15 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/qt_ui)
 set(QT_SRC
         qt_src/BoardController.h
         qt_src/BoardController.cpp
+        qt_src/BoardHardwareInterface.cpp
+        qt_src/BoardHardwareInterface.h
+        qt_src/Pub.cpp
+        qt_src/Pub.h
 )
 set(QT_UI qt_ui/mainwindow.ui)
-set(RES )
+set(RES
+        styles.qrc
+)
 
 SET(SRC
         ${QT_SRC}

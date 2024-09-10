@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>styles/pushbutton.qss</file>
+        <file>styles/combox.qss</file>
+    </qresource>
+</RCC>
