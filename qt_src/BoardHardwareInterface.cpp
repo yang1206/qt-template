@@ -4,6 +4,7 @@
 
 #include "BoardHardwareInterface.h"
 #include <QDebug>
+#include <QFile>
 #include <QString>
 #include <iostream>
 #include "pub.h"
@@ -221,6 +222,71 @@ int BoardHardwareInterface::QT_BoardMultiTrigerSingleDma(uint32_t DMAoncebytes, 
     ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x04, 0); // 乒乓操作第一块地址
     return ret;
 }
+
+
+int BoardHardwareInterface::QT_BoardSetStdSingleDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes) {
+    int ret = 0;
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x14, 4 * 1024 * 1024); // DMA单次搬运的长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_TRIG_CTRL, 0x34, once_trig_bytes / 64 * 64); // 设置单次触发长度
+    ret = Func_QTXdmaWriteRegister(
+            &m_cardInfo, BASE_DMA_ADC, 0x18,
+            DMATotolbytes / 64 * 64); // 每一次触发的长度 如果是触发式采集应该注意触发频率和单次采集长度的大小关系
+                                      // 单次采集长度<触发频率理论采集长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x1c,
+                                   DMATotolbytes / 64 * 64); // xdma传输段长(byte) 一般为触发次数* 单次触发长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x04, 0); // 乒乓操作第一块地址
+    return ret;
+}
+
+int BoardHardwareInterface::QT_BoardSetStdMultiDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes) {
+    int ret = 0;
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x14, 4 * 1024 * 1024); // DMA单次搬运的长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_TRIG_CTRL, 0x34, once_trig_bytes / 64 * 64); // 设置单次触发长度
+    ret = Func_QTXdmaWriteRegister(
+            &m_cardInfo, BASE_DMA_ADC, 0x18,
+            DMATotolbytes / 64 * 64); // 每一次触发的长度 如果是触发式采集应该注意触发频率和单次采集长度的大小关系
+                                      // 单次采集长度<触发频率理论采集长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x1c,
+                                   DMATotolbytes / 64 * 64); // xdma传输段长(byte) 一般为触发次数* 单次触发长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x04, 0); // 乒乓操作第一块地址
+    return ret;
+}
+
+int BoardHardwareInterface::QT_BoardSetFifoSingleDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes) {
+    int ret = 0;
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x14, 4 * 1024 * 1024); // DMA单次搬运的长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_TRIG_CTRL, 0x34, once_trig_bytes / 64 * 64); // 设置单次触发长度
+    ret = Func_QTXdmaWriteRegister(
+            &m_cardInfo, BASE_DMA_ADC, 0x18,
+            DMATotolbytes / 64 * 64); // 每一次触发的长度 如果是触发式采集应该注意触发频率和单次采集长度的大小关系
+                                      // 单次采集长度<触发频率理论采集长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x1c,
+                                   DMATotolbytes / 64 * 64); // xdma传输段长(byte) 一般为触发次数* 单次触发长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR0_LOW, 0);
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR0_HIGH, 0);
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR1_LOW, 0x80000000);
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR1_HIGH, 0);
+    return ret;
+}
+
+int BoardHardwareInterface::QT_BoardSetFifoMultiDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes) {
+    int ret = 0;
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x14, 4 * 1024 * 1024); // DMA单次搬运的长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_TRIG_CTRL, 0x34, once_trig_bytes / 64 * 64); // 设置单次触发长度
+    ret = Func_QTXdmaWriteRegister(
+            &m_cardInfo, BASE_DMA_ADC, 0x18,
+            DMATotolbytes / 64 * 64); // 每一次触发的长度 如果是触发式采集应该注意触发频率和单次采集长度的大小关系
+                                      // 单次采集长度<触发频率理论采集长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x1c,
+                                   DMATotolbytes / 64 * 64); // xdma传输段长(byte) 一般为触发次数* 单次触发长度
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR0_LOW, 0);
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR0_HIGH, 0);
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR1_LOW, 0x0);
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, OFFSET_DMA_ADC_BASEADDR1_HIGH, 0x1);
+    return ret;
+}
+
+
 int BoardHardwareInterface::QT_BoardSetTransmitMode(int transmitpoints, int transmittimes) {
     int ret = 0;
     ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_DMA_ADC, 0x00, transmitpoints);
@@ -482,4 +548,49 @@ int BoardHardwareInterface::QT_BoardSetOffset12136DC(int channel_id) {
         puts("Wrong channel id!");
     }
     return ret;
+}
+int BoardHardwareInterface::QT_BoardExternalTrigger(int mode, int counts) {
+    int ret = 0;
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_TRIG_CTRL, 0x00, mode);
+    ret = Func_QTXdmaWriteRegister(&m_cardInfo, BASE_TRIG_CTRL, 0x04, counts);
+    return ret;
+}
+int BoardHardwareInterface::QT_BoardGetData(uint64_t unOffsetAddr, uint16_t *pBufDest, unsigned int unLen,
+                                            unsigned int unTimeOut) {
+    return QTXdmaGetDataBuffer(unOffsetAddr, &m_cardInfo, pBufDest, unLen, unTimeOut);
+}
+
+
+std::vector<std::vector<uint16_t>> BoardHardwareInterface::parseAndSplitData(const uint16_t *buffer, size_t bufferSize,
+                                                                             size_t numChannels) {
+    std::vector<std::vector<uint16_t>> channelData(numChannels);
+
+    for (size_t i = 0; i < bufferSize; ++i) {
+        size_t channelIndex = i % numChannels;
+        channelData[channelIndex].push_back(buffer[i]);
+    }
+
+    // 输出每个通道的所有数据
+    for (size_t i = 0; i < numChannels; ++i) {
+        qDebug() << "通道" << i << "数据:";
+        QString channelOutput;
+        for (const auto &value: channelData[i]) {
+            channelOutput += QString::number(value) + " ";
+
+            // 每1000个数据换行一次，以提高可读性
+            if (channelOutput.count(' ') % 1000 == 0) {
+                qDebug().noquote() << channelOutput;
+                channelOutput.clear();
+            }
+        }
+
+        // 输出剩余的数据
+        if (!channelOutput.isEmpty()) {
+            qDebug().noquote() << channelOutput;
+        }
+
+        qDebug() << "通道" << i << "数据结束，总计" << channelData[i].size() << "个数据点";
+    }
+
+    return channelData;
 }

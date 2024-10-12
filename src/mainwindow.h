@@ -25,10 +25,14 @@ private slots:
     void closeBoard(); // 关闭板卡的槽函数
     void showBoardInfo(); // 显示板卡信息
 
+    int on_getData_Btn_clicked();
+
 private:
     Ui::mainwindow *ui;
     BoardController m_boardController; // 添加板卡控制器
-    void setupChannel(); // 设置通道
+
+    void setChannel(std::vector<ChannelInfo> channels);
+    void setupUiSettings();
 };
 
 

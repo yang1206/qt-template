@@ -15,9 +15,9 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
 set(LIBRARY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/3rd")
 #
 ## 设置 board SDK 的路径
-set(BOARD_INCLUDE_DIR "${LIBRARY_ROOT}/include")
-set(BOARD_LIB_DIR "${LIBRARY_ROOT}/lib/x64")  # 如果你使用的是 x64 平台
-set(BOARD_DLL_DIR "${LIBRARY_ROOT}/dll/x64")  # 添加 DLL 目录
+set(BOARD_INCLUDE_DIR "${LIBRARY_ROOT}/xdma/include")
+set(BOARD_LIB_DIR "${LIBRARY_ROOT}/xdma/lib/x64")  # 如果你使用的是 x64 平台
+set(BOARD_DLL_DIR "${LIBRARY_ROOT}/xdma/dll/x64")  # 添加 DLL 目录
 ## 将头文件路径包含到项目中
 include_directories(${BOARD_INCLUDE_DIR} ${BOARD_UTILS_DIR})
 #

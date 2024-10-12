@@ -63,6 +63,25 @@ public:
      *设置DMA搬运数据量
      */
     int QT_BoardMultiTrigerSingleDma(uint32_t DMAoncebytes, uint32_t once_trig_bytes, uint32_t DAMTotolbytes);
+    // 函数功能: 设置DMA传输参数
+    // 函数参数：once_trig_bytes：单次触发数据量   DMATotolbytes：中断数据量
+    // 函数返回: 成功返回0,失败返回-1并把详细错误信息写入日志文件
+    int QT_BoardSetStdSingleDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes);
+
+    // 函数功能: 设置StdMulti DMA传输参数
+    // 函数参数：once_trig_bytes：单次触发数据量   DMATotolbytes：中断数据量
+    // 函数返回: 成功返回0,失败返回-1并把详细错误信息写入日志文件
+    int QT_BoardSetStdMultiDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes);
+
+    // 函数功能: 设置FifoSingle DMA传输参数
+    // 函数参数：once_trig_bytes：单次触发数据量   DMATotolbytes：中断数据量
+    // 函数返回: 成功返回0,失败返回-1并把详细错误信息写入日志文件
+    int QT_BoardSetFifoSingleDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes);
+
+    // 函数功能: 设置FifoMulti DMA传输参数
+    // 函数参数：once_trig_bytes：单次触发数据量   DMATotolbytes：中断数据量
+    // 函数返回: 成功返回0,失败返回-1并把详细错误信息写入日志文件
+    int QT_BoardSetFifoMultiDMAParameter(uint32_t once_trig_bytes, uint32_t DMATotolbytes);
     // 设置传输模式为有限次传输模式
     // transmitpoints：0为有限点 1为无限点
     // transmittimes：DMA0传输次数 0有限次 1无限次
@@ -98,6 +117,10 @@ public:
      * @param[in] falling_codevalue 设置通道下降沿触发电平。
      */
     int QT_BoardChannelTrigger(int mode, int counts, int channelID, int rasing_codevalue, int falling_codevalue);
+    // 函数功能: 外部脉冲触发
+    // 函数参数：mode：触发模式  counts：触发次数
+    // 函数返回: 成功返回0,失败返回-1
+    int QT_BoardExternalTrigger(int mode, int counts);
     // 使能PCIE中断
     int QT_BoardSetInterruptSwitch();
     // 中断模式
@@ -131,7 +154,12 @@ public:
     int QT_BoardSetDacRegister(uint32_t uWriteStartAddr, uint32_t uPlaySize);
 
     int QT_BoardSetOffset12136DC(int channel_id);
-
+    // 获取数据
+    // 函数功能: 获取数据
+    // 函数参数：unOffsetAddr：起始地址 pBufDest：数据缓存区 unLen：数据长度 unTimeOut：超时时间
+    // 函数返回: 成功返回0,非0表示失败
+    int QT_BoardGetData(uint64_t unOffsetAddr, uint16_t *pBufDest, unsigned int unLen, unsigned int unTimeOut);
+    std::vector<std::vector<uint16_t>> parseAndSplitData(const uint16_t *buffer, size_t bufferSize, size_t numChannels);
 
 private:
     STXDMA_CARDINFO m_cardInfo;

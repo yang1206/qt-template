@@ -1,25 +1,22 @@
 #include <QApplication>
 #include <QFile>
 #include "mainwindow.h"
-
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
     mainwindow w;
-    QFile pushButtonStyle(":/styles/pushbutton.qss");
-    if (pushButtonStyle.open(QFile::ReadOnly)) {
-        QString styleSheet = QLatin1String(pushButtonStyle.readAll());
-        a.setStyleSheet(styleSheet);
+    QStringList styleFiles = {":/styles/pushbutton.qss", ":/styles/combox.qss", ":/styles/spinbox.qss"};
+    QString combinedStyleSheet;
+
+    for (const QString &styleFile: styleFiles) {
+        QFile file(styleFile);
+        if (file.open(QFile::ReadOnly)) {
+            combinedStyleSheet += QLatin1String(file.readAll());
+            file.close();
+        }
     }
 
-    QFile comboBoxStyle(":/styles/combox.qss");
-    if (comboBoxStyle.open(QFile::ReadOnly)) {
-        QString styleSheet1 = QLatin1String(comboBoxStyle.readAll());
-        a.setStyleSheet(styleSheet1);
-    }
-
-
-    pushButtonStyle.close();
-    comboBoxStyle.close();
+    // 设置合并后的样式表
+    a.setStyleSheet(combinedStyleSheet);
     w.show();
     return a.exec();
 }

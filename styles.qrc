@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>styles/pushbutton.qss</file>
         <file>styles/combox.qss</file>
+        <file>styles/spinbox.qss</file>
     </qresource>
 </RCC>
