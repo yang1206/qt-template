@@ -1,39 +1,37 @@
-//
-// Created by admin on 2024/9/2.
-//
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#ifndef QT_TEMPLATE_MAINWINDOW_H
-#define QT_TEMPLATE_MAINWINDOW_H
-
+#include <ElaPushButton.h>
+#include <ElaTabWidget.h>
+#include <ElaToolBar.h>
+#include <ElaWindow.h>
 #include <QMainWindow>
-#include "../qt_src/BoardController.h"
+#include <qcustomplot.h>
 
-QT_BEGIN_NAMESPACE
-namespace Ui {
-    class mainwindow;
-}
+QT_BEGIN_NAMESPACE namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class mainwindow : public QMainWindow {
+
+class MainWindow : public ElaWindow {
     Q_OBJECT
 
 public:
-    explicit mainwindow(QWidget *parent = nullptr);
-    ~mainwindow() override;
-private slots:
-    void openBoard(); // 打开板卡的槽函数
-    void closeBoard(); // 关闭板卡的槽函数
-    void showBoardInfo(); // 显示板卡信息
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
 
-    int on_getData_Btn_clicked();
+private slots:
+    void updatePlot();
+    void onThemeChanged(ElaThemeType::ThemeMode mode);
 
 private:
-    Ui::mainwindow *ui;
-    BoardController m_boardController; // 添加板卡控制器
+    void initializeUI();
+    void setupConnections();
 
-    void setChannel(std::vector<ChannelInfo> channels);
-    void setupUiSettings();
+private:
+    Ui::MainWindow *ui;
+    QCustomPlot *m_plot;
+    ElaPushButton *m_button;
+    QTimer *m_updateTimer;
 };
 
-
-#endif // QT_TEMPLATE_MAINWINDOW_H
+#endif // MAINWINDOW_H

@@ -1,82 +1,86 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.16)
 
-project(qt_template)
-set(CMAKE_PREFIX_PATH "C:/QT/6.7.2/mingw_64")
-# 设置 C++ 标准
+project(QT_Template VERSION 0.1 LANGUAGES CXX)
+
+# 基础设置
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+
+# IDE文件分组
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
 
-## 第三方库的根目录
+# 编译器选项
+if (MSVC)
+    add_compile_options("/utf-8")
+    add_definitions(-DUNICODE -D_UNICODE)
+    add_compile_options(/MP)
+endif ()
+
+# 第三方库根目录
 set(LIBRARY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/3rd")
-#
-## 设置 board SDK 的路径
-set(BOARD_INCLUDE_DIR "${LIBRARY_ROOT}/xdma/include")
-set(BOARD_LIB_DIR "${LIBRARY_ROOT}/xdma/lib/x64")  # 如果你使用的是 x64 平台
-set(BOARD_DLL_DIR "${LIBRARY_ROOT}/xdma/dll/x64")  # 添加 DLL 目录
-## 将头文件路径包含到项目中
-include_directories(${BOARD_INCLUDE_DIR} ${BOARD_UTILS_DIR})
-#
-## 将库文件路径包含到项目中
-link_directories(${BOARD_LIB_DIR})
 
+# include目录
+include_directories(
+        SYSTEM
+        "${CMAKE_SOURCE_DIR}/3rd/elawidget/include"
+        "${CMAKE_SOURCE_DIR}/3rd/qcustomplot"
+)
 
-# 查找项目主代码源文件
-file(GLOB_RECURSE PROJECT_SOURCES "src/*.cpp" "src/*.cxx" "src/*.cc" "src/*.c" "src/*.h")
+# 库目录
+link_directories(
+        SYSTEM
+        "${CMAKE_SOURCE_DIR}/3rd/elawidget/lib"
+)
 
-set(SOURCES ${UTIL_SOURCES})
+# 源文件收集
+file(GLOB_RECURSE PROJECT_SOURCES
+        "src/*.cpp"
+        "src/*.h"
+        "${CMAKE_SOURCE_DIR}/3rd/qcustomplot/*.h"
+        "${CMAKE_SOURCE_DIR}/3rd/qcustomplot/*.cpp"
+)
 
-# 查找项目源文件、头文件等
-file(GLOB_RECURSE SOURCES "*.cpp" "*.cxx" "*.cc")
+file(GLOB_RECURSE SOURCES "*.cpp")
 file(GLOB_RECURSE HEADERS "*.h")
 file(GLOB_RECURSE RESOURCES "*.qrc")
 file(GLOB_RECURSE FORMS "*.ui")
-file(GLOB_RECURSE STAMPS "*.stamp")
 
-# 对文件进行分组
+# 文件分组
 source_group("src" FILES ${SOURCES})
 source_group("header" FILES ${HEADERS})
 source_group("forms" FILES ${FORMS})
 source_group("res" FILES ${RESOURCES})
-source_group("stamps" FILES ${STAMPS})
 
-# 设置自动生成的 UI 文件的搜索路径
-set(CMAKE_AUTOUIC_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/qt_ui)
+# UI文件搜索路径
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/ui)
 
-set(QT_SRC
-        qt_src/BoardController.h
-        qt_src/BoardController.cpp
-        qt_src/BoardHardwareInterface.cpp
-        qt_src/BoardHardwareInterface.h
-        qt_src/Pub.cpp
-        qt_src/Pub.h
-)
-set(QT_UI qt_ui/mainwindow.ui)
+set(QT_UI ui/mainwindow.ui)
+
 set(RES
-        styles.qrc
+        ${CMAKE_SOURCE_DIR}/3rd/elawidget/include/ElaWidgetTools.qrc
 )
 
 SET(SRC
-        ${QT_SRC}
         ${QT_UI}
         ${RES}
         ${PROJECT_SOURCES}
 )
-# 收集依赖的 Qt 库
+message("Final SRC files: ${SRC}")
+# Qt库
 set(QT_LIB
         Core
         Widgets
         Gui
+        PrintSupport
 )
 
-# 查找 Qt6 包
 find_package(Qt6 COMPONENTS REQUIRED ${QT_LIB})
 
-# 组合连接时的名字
+# Qt库链接
 list(TRANSFORM QT_LIB PREPEND "Qt6::" OUTPUT_VARIABLE QT_LIB_LINK)
 foreach (item ${QT_LIB_LINK})
     get_target_property(LibLocation ${item} LOCATION)
@@ -88,18 +92,71 @@ endforeach ()
 add_executable(${PROJECT_NAME} ${SRC})
 
 # 链接库
-target_link_libraries(${PROJECT_NAME} PRIVATE ${QT_LIB_LINK}
-        QTXdmaApi
-        pthreadVC2
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${QT_LIB_LINK}
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rd/elawidget/lib/libelawidgettools.a
 )
 
-# 设置项目的属性
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+# 项目属性
+set_target_properties(${PROJECT_NAME} PROPERTIES
+        AUTORCC ON
         WIN32_EXECUTABLE OFF
 )
 
-# 设置运行时 DLL 搜索路径
+# Qt部署配置
+if (WIN32)
+    set(DeployArg
+            --no-quick-import
+            --no-translations
+            --no-opengl-sw
+            --no-system-d3d-compiler
+            --verbose 2  # 添加详细输出以便调试
+    )
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND Qt6::windeployqt
+            ${DeployArg} $<TARGET_FILE:${PROJECT_NAME}>
+    )
+endif ()
+
+# DLL搜索路径
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${BOARD_DLL_DIR} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        ${LIBRARY_ROOT}/elawidget/lib $<TARGET_FILE_DIR:${PROJECT_NAME}>
 )
+
+# 安装配置
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
+
+if (WIN32)
+    # 查找Qt插件目录
+    find_program(QT_QMAKE_EXECUTABLE qmake HINTS ${LibDir})
+    execute_process(
+            COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_PLUGINS
+            OUTPUT_VARIABLE QT_PLUGINS_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # 安装Qt插件
+    install(FILES "${QT_PLUGINS_DIR}/platforms/qwindows.dll"
+            DESTINATION bin/platforms
+    )
+    install(FILES "${QT_PLUGINS_DIR}/styles/qwindowsvistastyle.dll"
+            DESTINATION bin/styles
+    )
+    install(FILES
+            "${QT_PLUGINS_DIR}/imageformats/qgif.dll"
+            "${QT_PLUGINS_DIR}/imageformats/qico.dll"
+            "${QT_PLUGINS_DIR}/imageformats/qjpeg.dll"
+            "${QT_PLUGINS_DIR}/imageformats/qsvg.dll"
+            DESTINATION bin/imageformats
+    )
+endif ()
+
+# 安装主程序和依赖库
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+install(FILES ${QT_LIB_LINK} DESTINATION bin)
+
+# CPack打包配置
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}/package")
+set(CPACK_GENERATOR "ZIP")
+include(CPack)
