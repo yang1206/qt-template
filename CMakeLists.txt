@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+cmake_policy(SET CMP0077 NEW)
 
 project(QT_Template VERSION 0.1 LANGUAGES CXX)
 
@@ -103,6 +104,10 @@ foreach(item ${QT_LIB_LINK})
         list(APPEND QT_LIB_LINK ${LibLocation})
 endforeach()
 
+
+
+
+
 # 生成可执行文件
 add_executable(${PROJECT_NAME} ${SRC})
 
@@ -114,10 +119,13 @@ else()
         set(ELAWIDGET_LIB "${CMAKE_CURRENT_SOURCE_DIR}/3rd/elawidget/lib/libelawidgettools.a")
 endif()
 
-# 链接库
+# 查找 vcpkg 库
+find_package(FFTW3f  CONFIG REQUIRED)
+# 链接 vcpkg与第三方库
 target_link_libraries(${PROJECT_NAME} PRIVATE
         ${QT_LIB_LINK}
         ${ELAWIDGET_LIB}
+        FFTW3::fftw3f
 )
 
 # 项目属性

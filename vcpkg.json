@@ -1,0 +1,9 @@
+{
+  "name": "qt-template",
+  "version": "0.1.0",
+  "dependencies": [
+    {
+      "name": "fftw3"
+    }
+  ]
+}
