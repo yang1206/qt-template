@@ -23,17 +23,13 @@
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       },
-      "generator": "Visual Studio 17 2022",
-      "architecture": "x64",
+      "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "cl.exe"
+        "CMAKE_CXX_COMPILER": "g++.exe",
+        "CMAKE_PREFIX_PATH": "$env{QT_DIR}"
       },
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [
-            "Windows"
-          ]
-        }
+      "environment": {
+        "PATH": "$penv{PATH};$env{QT_DIR}/bin"
       }
     },
     {
