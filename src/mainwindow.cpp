@@ -1,12 +1,14 @@
 #include "mainwindow.h"
 #include <ElaMessageBar.h>
 #include <ElaTheme.h>
+#include <QIcon>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <complex>
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : ElaWindow(parent), ui(new Ui::MainWindow), m_updateTimer(new QTimer(this)) {
+    setWindowIcon(QIcon(":/icon/icon/windows.ico"));
     ui->setupUi(this);
     initializeUI();
     setupConnections();

@@ -76,14 +76,14 @@ set(QT_UI ui/mainwindow.ui)
 
 set(RES
         ${CMAKE_SOURCE_DIR}/3rd/elawidget/include/ElaWidgetTools.qrc
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/icon.qrc
 )
-
 SET(SRC
         ${QT_UI}
         ${RES}
         ${PROJECT_SOURCES}
 )
-message("Final SRC files: ${SRC}")
+
 
 # Qt库
 set(QT_LIB
@@ -104,9 +104,12 @@ foreach (item ${QT_LIB_LINK})
     list(APPEND QT_LIB_LINK ${LibLocation})
 endforeach ()
 
+if (WIN32)
+    set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/app.rc")
+endif ()
 
 # 生成可执行文件
-add_executable(${PROJECT_NAME} ${SRC})
+add_executable(${PROJECT_NAME} ${SRC} ${APP_ICON_RESOURCE_WINDOWS})
 
 if (WIN32)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -184,16 +187,6 @@ if (WIN32)
     # 安装Qt插件
     install(FILES "${QT_PLUGINS_DIR}/platforms/qwindows.dll"
             DESTINATION bin/platforms
-    )
-    install(FILES "${QT_PLUGINS_DIR}/styles/qwindowsvistastyle.dll"
-            DESTINATION bin/styles
-    )
-    install(FILES
-            "${QT_PLUGINS_DIR}/imageformats/qgif.dll"
-            "${QT_PLUGINS_DIR}/imageformats/qico.dll"
-            "${QT_PLUGINS_DIR}/imageformats/qjpeg.dll"
-            "${QT_PLUGINS_DIR}/imageformats/qsvg.dll"
-            DESTINATION bin/imageformats
     )
 endif ()
 

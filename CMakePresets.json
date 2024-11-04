@@ -6,7 +6,6 @@
       "hidden": true,
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_MANIFEST_MODE": "ON",
         "VCPKG_MANIFEST_INSTALL": "ON"
@@ -16,7 +15,7 @@
       }
     },
     {
-      "name": "windows",
+      "name": "windows-mingw",
       "inherits": "default-base",
       "condition": {
         "type": "equals",
@@ -30,6 +29,24 @@
       },
       "environment": {
         "PATH": "$penv{PATH};$env{QT_DIR}/bin"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "inherits": "default-base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_PREFIX_PATH": "$env{QT_MSVC_DIR}",
+        "CMAKE_CXX_FLAGS": "/Zc:__cplusplus"
+      },
+      "environment": {
+        "PATH": "$penv{PATH};$env{QT_MSVC_DIR}/bin"
       }
     },
     {
@@ -61,7 +78,7 @@
     {
       "name": "default",
       "inherits": [
-        "windows",
+        "windows-mingw",
         "macos",
         "linux"
       ]
@@ -69,9 +86,52 @@
   ],
   "buildPresets": [
     {
-      "name": "default",
-      "configurePreset": "default",
-      "configuration": "Debug"
+      "name": "mingw-debug",
+      "configurePreset": "windows-mingw",
+      "configuration": "Debug",
+      "displayName": "MinGW Debug"
+    },
+    {
+      "name": "mingw-release",
+      "configurePreset": "windows-mingw",
+      "configuration": "Release",
+      "displayName": "MinGW Release"
+    },
+    {
+      "name": "msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug",
+      "displayName": "MSVC Debug"
+    },
+    {
+      "name": "msvc-release",
+      "configurePreset": "windows-msvc",
+      "configuration": "Release",
+      "displayName": "MSVC Release"
+    },
+    {
+      "name": "macos-debug",
+      "configurePreset": "macos",
+      "configuration": "Debug",
+      "displayName": "macOS Debug"
+    },
+    {
+      "name": "macos-release",
+      "configurePreset": "macos",
+      "configuration": "Release",
+      "displayName": "macOS Release"
+    },
+    {
+      "name": "linux-debug",
+      "configurePreset": "linux",
+      "configuration": "Debug",
+      "displayName": "Linux Debug"
+    },
+    {
+      "name": "linux-release",
+      "configurePreset": "linux",
+      "configuration": "Release",
+      "displayName": "Linux Release"
     }
   ]
 }
