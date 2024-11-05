@@ -7,7 +7,8 @@
 #include <complex>
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) : ElaWindow(parent), ui(new Ui::MainWindow), m_updateTimer(new QTimer(this)) {
+MainWindow::MainWindow(QWidget *parent) :
+    ElaWindow(parent), ui(new Ui::MainWindow), m_updateTimer(new QTimer(this)) {
     setWindowIcon(QIcon(":/icon/icon/windows.ico"));
     ui->setupUi(this);
     initializeUI();
@@ -21,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent) : ElaWindow(parent), ui(new Ui::MainWind
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::initializeUI() {
+    auto agent = new QWK::WidgetWindowAgent(this);
+    agent->setup(this);
+
     // 设置窗口标题和大小
     setWindowTitle("ElaWidgetTools & QCustomPlot Demo");
     resize(800, 600);
@@ -173,12 +177,14 @@ void MainWindow::performFFT() {
         double mag = sqrt(out[i][0] * out[i][0] + out[i][1] * out[i][1]) / N;
 
         // 对低频分量进行加强显示
-        if (freq > 0 && freq <= 25) { // 0-25Hz 范围内
+        if (freq > 0 && freq <= 25) {
+            // 0-25Hz 范围内
             mag *= 2.0; // 加强低频显示
         }
 
         // 添加频率点（使用对数平滑）
-        if (mag > 0.005) { // 提高阈值以减少噪声
+        if (mag > 0.005) {
+            // 提高阈值以减少噪声
             frequencies.append(freq);
             magnitudes.append(mag * 2); // 补偿单边谱
         }
@@ -191,7 +197,8 @@ void MainWindow::performFFT() {
 
     // 添加峰值标签
     for (int i = 0; i < frequencies.size(); i++) {
-        if (magnitudes[i] > 0.1) { // 只标记主要峰值
+        if (magnitudes[i] > 0.1) {
+            // 只标记主要峰值
             QCPItemText *textLabel = new QCPItemText(m_fftPlot);
             textLabel->position->setType(QCPItemPosition::ptPlotCoords);
             textLabel->position->setCoords(frequencies[i], magnitudes[i] + 0.02);
