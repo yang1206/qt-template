@@ -1,30 +1,29 @@
-# Qt 项目模板
+# QT Template
 
-这是一个跨平台的Qt项目模板，支持Windows、macOS和Linux平台。
+一个基于 Qt6 的跨平台应用模板，集成了现代化的 UI 框架和构建系统。
 
-## 前置条件
+## 功能特性
 
-### 必需工具
-- CMake (>= 3.16)
-- Qt 6
-- Ninja
-- vcpkg
-- Git
+- 跨平台支持 (Windows, macOS, Linux)
+- 现代化的 UI 框架
+  - ElaWidgetTools 提供丰富的自定义控件
+  - QCustomPlot 提供高性能图表支持
+  - QWindowKit (可选) 提供类原生窗口体验
+- 自适应深色/浅色主题
+- vcpkg 包管理集成
+- CMake 现代化构建系统
 
-### 编译器要求
-- Windows: Visual Studio 2019或更新版本 (MSVC)
-- macOS: Clang
-- Linux: GCC
+## 技术栈
 
-## 环境变量配置
+- Qt 6.0+
+- CMake 3.16+
+- C++17
+- vcpkg 包管理器
 
-1. 设置`VCPKG_ROOT`环境变量，指向vcpkg安装目录
-2. 将Qt安装目录添加到系统PATH中
-
-## 项目结构
+## 目录结构
 ```
 ├── 3rd/                    # 第三方库
-│   ├── elawidget/         # ELA Widget库
+│   ├── elawidget/         # ElaWidget库
 │   └── qcustomplot/       # QCustomPlot库
 ├── src/                    # 源代码
 ├── ui/                     # UI文件
@@ -39,8 +38,8 @@
 ### Windows
 ```bash
 # 克隆项目
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/yang1206/qt-template
+cd qt-template
 
 # 使用CMake预设构建
 cmake --preset default
@@ -50,8 +49,8 @@ cmake --build build
 ### macOS
 ```bash
 # 克隆项目
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/yang1206/qt-template
+cd qt-template
 
 # 安装依赖（如果需要）
 brew install cmake ninja qt@6
@@ -64,8 +63,8 @@ cmake --build build
 ### Linux
 ```bash
 # 克隆项目
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/yang1206/qt-template
+cd qt-template
 
 # 安装依赖（Ubuntu为例）
 sudo apt update

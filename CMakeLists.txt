@@ -15,100 +15,51 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Debug/Release 分别输出到不同目录
-foreach(OUTPUT_CONFIG ${CMAKE_CONFIGURATION_TYPES})
-        string(TOUPPER ${OUTPUT_CONFIG} OUTPUT_CONFIG)
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} ${CMAKE_BINARY_DIR}/bin/${OUTPUT_CONFIG})
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} ${CMAKE_BINARY_DIR}/lib/${OUTPUT_CONFIG})
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUT_CONFIG} ${CMAKE_BINARY_DIR}/lib/${OUTPUT_CONFIG})
-endforeach()
-
 # IDE文件分组
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
 
 # 编译器选项
 if(MSVC)
-        add_compile_options("/utf-8")
+        add_compile_options("/utf-8" "/MP")
         add_definitions(-DUNICODE -D_UNICODE)
-        add_compile_options(/MP)
 endif()
 
 # 第三方库根目录
 set(LIBRARY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/3rd")
 
-# include目录
-include_directories(
-        SYSTEM
-        "${CMAKE_SOURCE_DIR}/3rd/elawidget/include"
-        "${CMAKE_SOURCE_DIR}/3rd/qcustomplot"
-)
-
-# 库目录
-link_directories(
-        SYSTEM
-        "${CMAKE_SOURCE_DIR}/3rd/elawidget/lib"
-)
-
 # 源文件收集
 file(GLOB_RECURSE PROJECT_SOURCES
         "src/*.cpp"
         "src/*.h"
-        "${CMAKE_SOURCE_DIR}/3rd/qcustomplot/*.h"
-        "${CMAKE_SOURCE_DIR}/3rd/qcustomplot/*.cpp"
+        "${LIBRARY_ROOT}/qcustomplot/*.h"
+        "${LIBRARY_ROOT}/qcustomplot/*.cpp"
 )
 
-file(GLOB_RECURSE SOURCES "*.cpp")
-file(GLOB_RECURSE HEADERS "*.h")
-file(GLOB_RECURSE RESOURCES "*.qrc")
-file(GLOB_RECURSE FORMS "*.ui")
-
-# 文件分组
-source_group("src" FILES ${SOURCES})
-source_group("header" FILES ${HEADERS})
-source_group("forms" FILES ${FORMS})
-source_group("res" FILES ${RESOURCES})
-
-# UI文件搜索路径
-set(CMAKE_AUTOUIC_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/ui)
-
-set(QT_UI ui/mainwindow.ui)
-
-set(RES
-        ${CMAKE_SOURCE_DIR}/3rd/elawidget/include/ElaWidgetTools.qrc
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/icon.qrc
-)
-SET(SRC
-        ${QT_UI}
-        ${RES}
-        ${PROJECT_SOURCES}
+# UI文件和资源文件
+set(QT_UI "${CMAKE_CURRENT_SOURCE_DIR}/ui/mainwindow.ui")
+set(QT_RES
+        "${LIBRARY_ROOT}/elawidget/include/ElaWidgetTools.qrc" # elawidget 的资源文件
+        "${CMAKE_CURRENT_SOURCE_DIR}/res/icon.qrc" # 项目自身的资源文件
 )
 
-# Qt库
-set(QT_LIB
+# 设置 UI 文件的搜索路径
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
+
+# Qt配置
+set(CMAKE_PREFIX_PATH $ENV{Qt6_DIR}) # 确保设置了 Qt6_DIR 环境变量
+set(QT_COMPONENTS
         Core
-        Widgets
         Gui
-        PrintSupport
+        Widgets
+        PrintSupport # QCustomPlot 需要
 )
-
-find_package(Qt6 COMPONENTS REQUIRED ${QT_LIB})
-
-# Qt库链接
-list(TRANSFORM QT_LIB PREPEND "Qt6::" OUTPUT_VARIABLE QT_LIB_LINK)
-
-foreach(item ${QT_LIB_LINK})
-        get_target_property(LibLocation ${item} LOCATION)
-        get_filename_component(LibDir ${LibLocation} DIRECTORY)
-        list(APPEND QT_LIB_LINK ${LibLocation})
-endforeach()
+find_package(Qt6 COMPONENTS ${QT_COMPONENTS} REQUIRED)
 
 # 生成可执行文件
-
-# 平台特定的图标配置
 if(WIN32)
         set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/app.rc")
-        add_executable(${PROJECT_NAME} WIN32 ${SRC} ${APP_ICON_RESOURCE_WINDOWS})
+        add_executable(${PROJECT_NAME} WIN32 ${PROJECT_SOURCES} ${QT_UI} ${QT_RES} ${APP_ICON_RESOURCE_WINDOWS})
 elseif(APPLE)
         set(MACOSX_BUNDLE_ICON_FILE app.icns)
         set(APP_ICON_MACOSX "${CMAKE_CURRENT_SOURCE_DIR}/app.icns")
@@ -116,11 +67,11 @@ elseif(APPLE)
                 MACOSX_PACKAGE_LOCATION "Resources"
         )
         add_executable(${PROJECT_NAME} MACOSX_BUNDLE
-                ${SRC}
+                ${PROJECT_SOURCES}
+                ${QT_UI}
+                ${QT_RES}
                 ${APP_ICON_MACOSX}
         )
-
-        # 设置 macOS 特定的包属性
         set_target_properties(${PROJECT_NAME} PROPERTIES
                 MACOSX_BUNDLE TRUE
                 MACOSX_BUNDLE_GUI_IDENTIFIER "com.yang1206.${PROJECT_NAME}"
@@ -129,92 +80,116 @@ elseif(APPLE)
                 MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
         )
 else()
-        add_executable(${PROJECT_NAME} ${SRC})
+        add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${QT_UI} ${QT_RES})
 endif()
 
-if(WIN32)
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-                # MinGW 版本
-                message(STATUS "Using MinGW compiler")
-                set(ELAWIDGET_LIB "${CMAKE_CURRENT_SOURCE_DIR}/3rd/elawidget/lib/libelawidgettools.a")
-
-                # 确保 DLL 文件被复制到输出目录
-                add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        "${CMAKE_CURRENT_SOURCE_DIR}/3rd/elawidget/lib/elawidgettools.dll"
-                        $<TARGET_FILE_DIR:${PROJECT_NAME}>
-                )
-        else()
-                # MSVC 版本
-                message(STATUS "Using MSVC compiler")
-                set(ELAWIDGET_LIB "${CMAKE_CURRENT_SOURCE_DIR}/3rd/elawidget/lib/elawidgettools.lib")
-        endif()
-else()
-        if(APPLE)
-                set(ELAWIDGET_LIB "${CMAKE_CURRENT_SOURCE_DIR}/3rd/elawidget/lib/libelawidgettools.dylib")
-        else()
-                set(ELAWIDGET_LIB "${CMAKE_CURRENT_SOURCE_DIR}/3rd/elawidget/lib/libelawidgettools.a")
-        endif()
-endif()
+# 设置包含目录
+target_include_directories(${PROJECT_NAME} PRIVATE
+        "${LIBRARY_ROOT}/elawidget/include"
+        "${LIBRARY_ROOT}/qcustomplot"
+        "${LIBRARY_ROOT}/qwindowkit/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+)
 
 # 查找 vcpkg 库
 find_package(FFTW3f CONFIG REQUIRED)
 
-# 链接 vcpkg与第三方库
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${QT_LIB_LINK}
-        ${ELAWIDGET_LIB}
-        FFTW3::fftw3f
-)
-
-# 项目属性
-set_target_properties(${PROJECT_NAME} PROPERTIES
-        AUTORCC ON
-        WIN32_EXECUTABLE OFF
-)
-
-# Qt部署配置
+# 设置库文件后缀
 if(WIN32)
-        set(DeployArg
-                --no-quick-import
-                --no-translations
-                --no-opengl-sw
-                --no-system-d3d-compiler
-                --verbose 2 # 添加详细输出以便调试
-        )
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND Qt6::windeployqt
-                ${DeployArg} $<TARGET_FILE:${PROJECT_NAME}>
-        )
+        if(MSVC)
+                set(LIB_SUFFIX ".lib")
+                set(SHARED_LIB_SUFFIX ".dll")
+        else()
+                set(LIB_SUFFIX ".a")
+                set(SHARED_LIB_SUFFIX ".dll")
+        endif()
+elseif(APPLE)
+        set(LIB_SUFFIX ".dylib")
+        set(SHARED_LIB_SUFFIX ".dylib")
+else()
+        set(LIB_SUFFIX ".so")
+        set(SHARED_LIB_SUFFIX ".so")
 endif()
 
-# DLL搜索路径
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${LIBRARY_ROOT}/elawidget/lib $<TARGET_FILE_DIR:${PROJECT_NAME}>
+# 设置库文件路径
+set(ELAWIDGET_LIB "${LIBRARY_ROOT}/elawidget/lib/libelawidgettools${SHARED_LIB_SUFFIX}")
+set(QWINDOWKIT_CORE_LIB "${LIBRARY_ROOT}/qwindowkit/lib/libQWKCore${SHARED_LIB_SUFFIX}")
+set(QWINDOWKIT_WIDGETS_LIB "${LIBRARY_ROOT}/qwindowkit/lib/libQWKWidgets${SHARED_LIB_SUFFIX}")
+
+# 链接库
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::PrintSupport
+        "${ELAWIDGET_LIB}" # 使用完整路径
+        FFTW3::fftw3f
+        "${QWINDOWKIT_CORE_LIB}" # 使用完整路径
+        "${QWINDOWKIT_WIDGETS_LIB}" # 使用完整路径
 )
+
+# 复制动态库
+if(WIN32)
+        set(SHARED_LIBS
+                "${ELAWIDGET_LIB}"
+                "${QWINDOWKIT_CORE_LIB}"
+                "${QWINDOWKIT_WIDGETS_LIB}"
+        )
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${SHARED_LIBS}
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        )
+elseif(APPLE)
+        set(SHARED_LIBS
+                "${ELAWIDGET_LIB}"
+                "${QWINDOWKIT_CORE_LIB}"
+                "${QWINDOWKIT_WIDGETS_LIB}"
+        )
+
+        # macOS 特定的库安装路径
+        set(BUNDLE_LIB_DIR "${PROJECT_NAME}.app/Contents/Frameworks")
+
+        # 复制动态库到应用程序包中
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>/../Frameworks
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${SHARED_LIBS}
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>/../Frameworks
+        )
+
+        # 修复库的安装名称
+        foreach(LIB ${SHARED_LIBS})
+                get_filename_component(LIB_NAME ${LIB} NAME)
+                add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                        COMMAND install_name_tool -change ${LIB}
+                        "@executable_path/../Frameworks/${LIB_NAME}"
+                        $<TARGET_FILE:${PROJECT_NAME}>
+                )
+        endforeach()
+endif()
 
 # 安装配置
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 
-if(WIN32)
-        # 查找Qt插件目录
-        find_program(QT_QMAKE_EXECUTABLE qmake HINTS ${LibDir})
-        execute_process(
-                COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_PLUGINS
-                OUTPUT_VARIABLE QT_PLUGINS_DIR
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin
+        BUNDLE DESTINATION .
+        LIBRARY DESTINATION lib
+)
 
+if(WIN32)
         # 安装Qt插件
-        install(FILES "${QT_PLUGINS_DIR}/platforms/qwindows.dll"
+        get_target_property(QtCore_LOCATION Qt6::Core LOCATION)
+        get_filename_component(QT_BIN_DIR ${QtCore_LOCATION} DIRECTORY)
+        get_filename_component(QT_ROOT_DIR ${QT_BIN_DIR} DIRECTORY)
+        install(FILES "${QT_ROOT_DIR}/plugins/platforms/qwindows${SHARED_LIB_SUFFIX}"
                 DESTINATION bin/platforms
         )
 endif()
-
-# 安装主程序和依赖库
-install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-install(FILES ${QT_LIB_LINK} DESTINATION bin)
 
 # CPack打包配置
 set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}/package")
