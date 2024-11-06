@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/icon">
-        <file>icon/windows.ico</file>
+        <file>icon/windows/app.ico</file>
     </qresource>
 </RCC>

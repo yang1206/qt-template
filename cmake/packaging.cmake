@@ -16,43 +16,44 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME}) # 安装目录
 # ========== 安装配置 ==========
 function(configure_installation TARGET_NAME)
     # 根据不同平台设置安装目录
-    if(WIN32)
+    if (WIN32)
         # Windows 平台安装路径
         set(RUNTIME_INSTALL_DIR ${CMAKE_INSTALL_BINDIR}) # 可执行文件目录
         set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_BINDIR}) # 库文件目录（Windows下与bin相同）
         set(RESOURCE_INSTALL_DIR ${CMAKE_INSTALL_BINDIR}) # 资源文件目录
-    elseif(APPLE)
+    elseif (APPLE)
         # macOS 平台安装路径（.app 包结构）
         set(RUNTIME_INSTALL_DIR "${PROJECT_NAME}.app/Contents/MacOS") # 可执行文件
         set(LIBRARY_INSTALL_DIR "${PROJECT_NAME}.app/Contents/Frameworks") # 框架和库
         set(RESOURCE_INSTALL_DIR "${PROJECT_NAME}.app/Contents/Resources") # 资源文件
-    else()
+    else ()
         # Linux 平台安装路径
         set(RUNTIME_INSTALL_DIR ${CMAKE_INSTALL_BINDIR}) # 可执行文件 (/usr/bin)
         set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}) # 库文件 (/usr/lib)
         set(RESOURCE_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}) # 资源文件
-    endif()
+    endif ()
 
     # 安装主程序
     install(TARGETS ${TARGET_NAME}
-        RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR} # 可执行文件安装规则
-        BUNDLE DESTINATION . COMPONENT Runtime # macOS Bundle 安装规则
-        LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR} # 库文件安装规则
+            RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR} # 可执行文件安装规则
+            BUNDLE DESTINATION . COMPONENT Runtime # macOS Bundle 安装规则
+            LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR} # 库文件安装规则
     )
 
     # 安装依赖库
     install(FILES ${RUNTIME_DEPENDENCIES}
-        DESTINATION ${LIBRARY_INSTALL_DIR}
+            DESTINATION ${LIBRARY_INSTALL_DIR}
     )
 
     # 根据平台配置特定的安装规则
-    if(WIN32)
+    if (WIN32)
         configure_windows_installation(${TARGET_NAME})
-    elseif(APPLE)
+    elseif (APPLE)
         configure_macos_installation(${TARGET_NAME})
-    else()
+    else ()
         configure_linux_installation(${TARGET_NAME})
-    endif()
+    endif ()
+
 endfunction()
 
 # ========== Windows 特定安装配置 ==========
@@ -61,30 +62,30 @@ function(configure_windows_installation TARGET_NAME)
     set(CPACK_GENERATOR "WIX;ZIP" PARENT_SCOPE) # 使用 WiX 和 ZIP 格式
 
     # WiX 安装程序特定配置
+    # WiX基本配置
+    # 注意: 升级GUID需要是唯一的，你可以通过以下方式生成:
+    # 1. Visual Studio: 工具 -> 创建 GUID
+    # 2. PowerShell: [guid]::NewGuid()
+    # 3. 在线生成器: https://www.guidgenerator.com/
+    # 4. Linux: uuidgen
+    # 生成后替换下面的占位符GUID
     set(CPACK_WIX_UPGRADE_GUID "12345678-1234-1234-1234-123456789012") # 升级 GUID
     set(CPACK_WIX_PRODUCT_ICON "${PROJECT_ROOT}/res/icon/windows/app.ico") # 安装程序图标
     set(CPACK_WIX_UI_BANNER "${PROJECT_ROOT}/res/icon/windows/banner.png") # 安装程序横幅
     set(CPACK_WIX_UI_DIALOG "${PROJECT_ROOT}/res/icon/windows/dialog.png") # 安装程序对话框
 
     # 部署 Qt 依赖
-    configure_qt_deployment(${TARGET_NAME} "windeployqt"
-        ARGS
-        --verbose 1
-        --no-translations
-        --no-system-d3d-compiler
-        --no-opengl-sw
-        --no-virtualkeyboard
-    )
+    configure_qt_deployment(${TARGET_NAME})
 
     # 安装 vcpkg 依赖
-    if(VCPKG_INSTALLED_DIR)
+    if (VCPKG_INSTALLED_DIR)
         file(GLOB VCPKG_DLLS
-            "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll"
+                "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll"
         )
         install(FILES ${VCPKG_DLLS}
-            DESTINATION ${RUNTIME_INSTALL_DIR}
+                DESTINATION ${RUNTIME_INSTALL_DIR}
         )
-    endif()
+    endif ()
 endfunction()
 
 # ========== macOS 特定安装配置 ==========
@@ -100,22 +101,17 @@ function(configure_macos_installation TARGET_NAME)
     set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.yourcompany.${PROJECT_NAME}")
 
     # 部署 Qt 依赖
-    configure_qt_deployment(${TARGET_NAME} "macdeployqt"
-        ARGS
-        -verbose=1
-        -always-overwrite
-        -no-strip
-    )
+    configure_qt_deployment(${TARGET_NAME})
 
     # 安装 vcpkg 依赖
-    if(VCPKG_INSTALLED_DIR)
+    if (VCPKG_INSTALLED_DIR)
         file(GLOB VCPKG_LIBS
-            "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/*.dylib"
+                "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/*.dylib"
         )
         install(FILES ${VCPKG_LIBS}
-            DESTINATION ${LIBRARY_INSTALL_DIR}
+                DESTINATION ${LIBRARY_INSTALL_DIR}
         )
-    endif()
+    endif ()
 endfunction()
 
 # ========== Linux 特定安装配置 ==========
@@ -134,74 +130,167 @@ function(configure_linux_installation TARGET_NAME)
 
     # 安装桌面集成文件
     install(FILES
-        "${CMAKE_BINARY_DIR}/generated/${PROJECT_NAME}.desktop"
-        DESTINATION "share/applications"
+            "${CMAKE_BINARY_DIR}/generated/${PROJECT_NAME}.desktop"
+            DESTINATION "share/applications"
     )
 
     # 部署 Qt 依赖
-    if(Qt6_FOUND)
+    if (Qt6_FOUND)
         find_program(LINUXDEPLOYQT_EXECUTABLE linuxdeployqt)
 
-        if(LINUXDEPLOYQT_EXECUTABLE)
-            configure_qt_deployment(${TARGET_NAME} "linuxdeployqt"
-                ARGS
-                -verbose=1
-                -no-translations
-                -bundle-non-qt-libs
-            )
-        endif()
-    endif()
+        if (LINUXDEPLOYQT_EXECUTABLE)
+            configure_qt_deployment(${TARGET_NAME})
+        endif ()
+    endif ()
 endfunction()
 
 # ========== Qt 部署配置 ==========
-function(configure_qt_deployment TARGET_NAME DEPLOY_TOOL)
-    # 解析额外参数
-    cmake_parse_arguments(PARSE_ARGV 2 ARG "" "" "ARGS")
+function(configure_qt_deployment TARGET_NAME)
+    # 检查目标是否使用 Qt6
+    get_target_property(TARGET_LIBS ${TARGET_NAME} LINK_LIBRARIES)
+    if (NOT TARGET_LIBS MATCHES "Qt6::")
+        message(STATUS "Target ${TARGET_NAME} does not use Qt6, skipping Qt deployment")
+        return()
+    endif ()
+    # 最小化部署（只复制必要的文件）
+    set(DEPLOY_ARGS
+            --verbose 2
+            --no-quick-import     # 不复制 QtQuick 相关文件
+            --no-translations     # 不复制翻译文件
+            --no-opengl-sw       # 不复制软件 OpenGL 库
+            --no-system-d3d-compiler  # 不复制 D3D 编译器
+            --no-virtualkeyboard # 不复制虚拟键盘
+    )
 
-    if(Qt6_FOUND)
-        # 查找 Qt 部署工具
-        get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
-        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
-        find_program(DEPLOYQT_EXECUTABLE ${DEPLOY_TOOL} HINTS "${_qt_bin_dir}")
+    if (WIN32)
+        # Windows 平台：使用 Qt 提供的目标
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND Qt6::windeployqt
+                ${DEPLOY_ARGS}
+                "$<TARGET_FILE:${TARGET_NAME}>"
+                COMMENT "Deploying Qt dependencies for ${TARGET_NAME}..."
+        )
 
-        if(DEPLOYQT_EXECUTABLE)
-            # 根据平台配置部署命令
-            if(WIN32)
-                # Windows 平台部署
-                install(CODE "
-                    execute_process(
-                        COMMAND \"${DEPLOYQT_EXECUTABLE}\"
-                            ${ARG_ARGS}
-                            --dir \${CMAKE_INSTALL_PREFIX}/${RUNTIME_INSTALL_DIR}
-                            \${CMAKE_INSTALL_PREFIX}/${RUNTIME_INSTALL_DIR}/${PROJECT_NAME}.exe
-                    )
-                ")
-            elseif(APPLE)
-                # macOS 平台部署
-                install(CODE "
-                    execute_process(
-                        COMMAND \"${DEPLOYQT_EXECUTABLE}\"
-                            \${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.app
-                            ${ARG_ARGS}
-                    )
-                ")
-            else()
-                # Linux 平台部署
-                install(CODE "
-                    execute_process(
-                        COMMAND \"${DEPLOYQT_EXECUTABLE}\"
-                            \${CMAKE_INSTALL_PREFIX}/${RUNTIME_INSTALL_DIR}/${PROJECT_NAME}
-                            ${ARG_ARGS}
-                    )
-                ")
-            endif()
+        # 安装时部署
+        install(CODE "
+            message(STATUS \"Deploying Qt for installation of ${TARGET_NAME}...\")
+            execute_process(
+                COMMAND \"$<TARGET_FILE:Qt6::windeployqt>\"
+                    ${DEPLOY_ARGS}
+                    --dir \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}\"
+                    \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${TARGET_NAME}.exe\"
+            )
+        ")
 
-            message(STATUS "Configured ${DEPLOY_TOOL} deployment")
-        else()
-            message(WARNING "${DEPLOY_TOOL} not found, Qt deployment may be incomplete")
-        endif()
-    endif()
+    elseif (APPLE)
+        # macOS 平台：使用 macdeployqt
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND Qt6::macdeployqt
+                "$<TARGET_FILE_DIR:${TARGET_NAME}>/../.."
+                -verbose=2
+                -always-overwrite
+                COMMENT "Deploying Qt dependencies for ${TARGET_NAME}..."
+        )
+
+        install(CODE "
+            message(STATUS \"Deploying Qt for installation of ${TARGET_NAME}...\")
+            execute_process(
+                COMMAND \"$<TARGET_FILE:Qt6::macdeployqt>\"
+                    \"\${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}.app\"
+                    -verbose=2
+                    -always-overwrite
+            )
+        ")
+
+    else ()
+        # Linux 平台：使用 linuxdeployqt
+        find_program(LINUXDEPLOYQT_EXECUTABLE linuxdeployqt)
+        if (LINUXDEPLOYQT_EXECUTABLE)
+            add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                    COMMAND ${LINUXDEPLOYQT_EXECUTABLE}
+                    "$<TARGET_FILE:${TARGET_NAME}>"
+                    -verbose=2
+                    -no-translations
+                    -bundle-non-qt-libs
+                    COMMENT "Deploying Qt dependencies for ${TARGET_NAME}..."
+            )
+
+            install(CODE "
+                message(STATUS \"Deploying Qt for installation of ${TARGET_NAME}...\")
+                execute_process(
+                    COMMAND \"${LINUXDEPLOYQT_EXECUTABLE}\"
+                        \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${TARGET_NAME}\"
+                        -verbose=2
+                        -no-translations
+                        -bundle-non-qt-libs
+                )
+            ")
+        endif ()
+    endif ()
 endfunction()
 
 # 包含 CPack 模块（必须在所有配置之后）
 include(CPack)
+
+# 运行时依赖配置
+function(configure_runtime_dependencies TARGET_NAME)
+    # 1. 处理自定义运行时依赖
+    if (WIN32)
+        set(RUNTIME_DLLS
+                "${ELAWIDGET_ROOT}/lib/elawidgettools.dll"
+                "${QWINDOWKIT_ROOT}/lib/QWKCore.dll"
+                "${QWINDOWKIT_ROOT}/lib/QWKWidgets.dll"
+        )
+
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${RUNTIME_DLLS}
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+                COMMENT "Copying runtime DLLs to build directory"
+        )
+
+        install(FILES ${RUNTIME_DLLS}
+                DESTINATION ${CMAKE_INSTALL_BINDIR}
+                COMPONENT Runtime
+        )
+    elseif (APPLE)
+        set(RUNTIME_LIBS
+                "${ELAWIDGET_ROOT}/lib/libelawidgettools.dylib"
+                "${QWINDOWKIT_ROOT}/lib/libQWKCore.dylib"
+                "${QWINDOWKIT_ROOT}/lib/libQWKWidgets.dylib"
+        )
+
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${RUNTIME_LIBS}
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+                COMMENT "Copying runtime libraries to build directory"
+        )
+
+        install(FILES ${RUNTIME_LIBS}
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                COMPONENT Runtime
+        )
+    else ()
+        set(RUNTIME_LIBS
+                "${ELAWIDGET_ROOT}/lib/libelawidgettools.so"
+                "${QWINDOWKIT_ROOT}/lib/libQWKCore.so"
+                "${QWINDOWKIT_ROOT}/lib/libQWKWidgets.so"
+        )
+
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${RUNTIME_LIBS}
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+                COMMENT "Copying runtime libraries to build directory"
+        )
+
+        install(FILES ${RUNTIME_LIBS}
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                COMPONENT Runtime
+        )
+    endif ()
+
+    # 处理 Qt 依赖
+    configure_qt_deployment(${TARGET_NAME})
+endfunction()

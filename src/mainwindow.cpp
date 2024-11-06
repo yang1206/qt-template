@@ -9,7 +9,7 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     ElaWindow(parent), ui(new Ui::MainWindow), m_updateTimer(new QTimer(this)) {
-    setWindowIcon(QIcon(":/icon/icon/windows.ico"));
+    setWindowIcon(QIcon(":/icon/icon/windows/app.ico"));
     ui->setupUi(this);
     initializeUI();
     setupConnections();

@@ -105,7 +105,11 @@ function(configure_gcc_clang_options TARGET_NAME)
     -Wall # 启用所有常见警告
     -Wextra # 启用额外警告
     -Wpedantic # 严格遵循标准
+
+    # 选择性忽略特定警告
     -Wno-extra-semi # 忽略多余分号警告
+    -Wno-extra-semi-stmt # 忽略多余分号语句警告
+    -Wno-semicolon-before-method-body # 忽略方法体前的分号警告
     -Wno-deprecated-declarations # 忽略弃用声明警告
 
     # GCC 特定选项
@@ -114,6 +118,18 @@ function(configure_gcc_clang_options TARGET_NAME)
     # Clang 特定选项
     $<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>
   )
+  # 为第三方库头文件禁用警告
+  target_include_directories(${TARGET_NAME} SYSTEM PRIVATE
+    ${ELAWIDGET_ROOT}/include
+    ${QWINDOWKIT_ROOT}/include
+  )
+
+  # 添加编译器特定的颜色输出选项
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(${TARGET_NAME} PRIVATE -fdiagnostics-color=always)
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${TARGET_NAME} PRIVATE -fcolor-diagnostics)
+  endif()
 endfunction()
 
 # ========== 构建类型特定配置 ==========
