@@ -1,0 +1,29 @@
+#ifndef VERSION_H
+#define VERSION_H
+
+#include <string_view>
+
+namespace Version {
+    constexpr std::string_view PROJECT_NAME = "@VERSION_PROJECT_NAME@";
+    constexpr std::string_view PROJECT_VERSION = "@VERSION_PROJECT_VERSION@";
+    constexpr std::string_view GIT_BRANCH = "@GIT_BRANCH@";
+    constexpr std::string_view GIT_COMMIT_HASH = "@GIT_COMMIT_HASH@";
+    constexpr std::string_view GIT_COMMIT_DATE = "@GIT_COMMIT_DATE@";
+    constexpr bool GIT_DIRTY = @GIT_DIRTY@;
+
+    // 格式化的版本字符串
+    constexpr std::string_view VERSION_STRING =
+            "@VERSION_PROJECT_NAME@ v@VERSION_PROJECT_VERSION@ (@GIT_BRANCH@-@GIT_COMMIT_HASH@)";
+
+    // 构建类型
+    constexpr std::string_view BUILD_TYPE = "@VERSION_BUILD_TYPE@";
+
+    // 编译器信息
+    constexpr std::string_view COMPILER_ID = "@VERSION_COMPILER_ID@";
+    constexpr std::string_view COMPILER_VERSION = "@VERSION_COMPILER_VERSION@";
+
+    // 构建时间
+    constexpr std::string_view BUILD_TIMESTAMP = "@BUILD_TIMESTAMP@";
+} // namespace Version
+
+#endif // VERSION_H

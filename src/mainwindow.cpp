@@ -22,9 +22,6 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::initializeUI() {
-    auto agent = new QWK::WidgetWindowAgent(this);
-    agent->setup(this);
-
     // 设置窗口标题和大小
     setWindowTitle("ElaWidgetTools & QCustomPlot Demo");
     resize(800, 600);

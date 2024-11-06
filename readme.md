@@ -1,140 +1,145 @@
 # QT Template
 
-一个基于 Qt6 的跨平台应用模板，集成了现代化的 UI 框架和构建系统。
+一个基于 Qt6 的现代化跨平台应用模板，集成了完整的构建系统和丰富的开发工具支持。
 
 ## 功能特性
 
-- 跨平台支持 (Windows, macOS, Linux)
-- 现代化的 UI 框架
-  - ElaWidgetTools 提供丰富的自定义控件
-  - QCustomPlot 提供高性能图表支持
-  - QWindowKit (可选) 提供类原生窗口体验
-- 自适应深色/浅色主题
-- vcpkg 包管理集成
-- CMake 现代化构建系统
+- 完整的跨平台支持 (Windows, macOS, Linux)
+- 现代化的构建系统
+  - CMake 预设配置
+  - vcpkg 包管理集成
+  - ccache 编译加速支持
+  - 预编译头文件支持
+- 丰富的开发工具支持
+  - 多种构建类型支持（Debug/Release/RelWithDebInfo等）
+  - 代码分析工具集成（Address/Thread/UB Sanitizer）
+  - 代码覆盖率测试支持
+- 自动化的依赖管理
+  - Qt 组件自动配置
+  - 第三方库自动检测和链接
+  - 平台特定依赖处理
+- 完整的应用打包支持
+  - Windows (NSIS 安装包)
+  - macOS (.app 和 .dmg)
+  - Linux (DEB 和 RPM)
 
-## 技术栈
+## 项目结构
 
-- Qt 6.0+
-- CMake 3.16+
-- C++17
-- vcpkg 包管理器
-
-## 目录结构
 ```
+├── cmake/                  # CMake模块目录
+│   ├── build_config.cmake     # 构建配置
+│   ├── packaging.cmake        # 打包配置
+│   ├── project_settings.cmake # 项目设置
+│   ├── templates/            # 模板文件
+│   └── version_control.cmake  # 版本控制
 ├── 3rd/                    # 第三方库
 │   ├── elawidget/         # ElaWidget库
+│   ├── qwindowkit/        # QWindowKit库
 │   └── qcustomplot/       # QCustomPlot库
 ├── src/                    # 源代码
 ├── ui/                     # UI文件
-├── CMakeLists.txt         # CMake配置
+├── res/                    # 资源文件
+│   └── icon/              # 应用图标
+├── tests/                  # 测试代码
+├── CMakeLists.txt         # 主CMake配置
 ├── CMakePresets.json      # CMake预设
-├── vcpkg.json             # vcpkg依赖配置
-└── vcpkg-configuration.json # vcpkg仓库配置
+└── vcpkg.json             # vcpkg依赖配置
 ```
+
+## 构建类型
+
+支持以下构建类型：
+- Debug：调试版本
+- Release：发布版本
+- RelWithDebInfo：带调试信息的发布版本
+- MinSizeRel：最小体积版本
+- Coverage：代码覆盖率测试版本
+- ASan：内存错误检测版本
+- TSan：线程错误检测版本
+- UBSan：未定义行为检测版本
 
 ## 构建步骤
 
+### 前置要求
+- CMake 3.16+
+- Qt 6.0+
+- C++17 兼容的编译器
+  - GCC 9.0+
+  - Clang 10.0+
+  - MSVC 19.20+
+  - AppleClang 12.0+
+
 ### Windows
 ```bash
-# 克隆项目
-git clone https://github.com/yang1206/qt-template
-cd qt-template
-
-# 使用CMake预设构建
-cmake --preset default
-cmake --build build
+cmake --preset windows-release
+cmake --build --preset windows-release
 ```
 
 ### macOS
 ```bash
-# 克隆项目
-git clone https://github.com/yang1206/qt-template
-cd qt-template
-
-# 安装依赖（如果需要）
-brew install cmake ninja qt@6
-
-# 使用CMake预设构建
-cmake --preset default
-cmake --build build
+cmake --preset macos-release
+cmake --build --preset macos-release
 ```
 
 ### Linux
 ```bash
-# 克隆项目
-git clone https://github.com/yang1206/qt-template
-cd qt-template
-
-# 安装依赖（Ubuntu为例）
-sudo apt update
-sudo apt install cmake ninja-build qt6-base-dev
-
-# 使用CMake预设构建
-cmake --preset default
-cmake --build build
+cmake --preset linux-release
+cmake --build --preset linux-release
 ```
 
-## 依赖说明
+## 依赖项
 
-### Qt组件
-- Qt::Core
-- Qt::Widgets
-- Qt::Gui
-- Qt::PrintSupport
+### 必需依赖
+- Qt 6.0+ 组件：
+  - Qt::Core
+  - Qt::Widgets
+  - Qt::Gui
+  - Qt::PrintSupport
+- FFTW3 (通过 vcpkg 安装)
 
-### 第三方库
-- FFTW3 (通过vcpkg安装)
-- ElaWidget (预编译库，已包含在3rd目录)
-- QCustomPlot (源码包含在3rd目录)
+### 可选依赖
+- ccache (用于加速编译)
+- ElaWidget (UI 组件库)
+- QWindowKit (窗口管理)
+- QCustomPlot (图表支持)
 
-## 输出目录结构
+## 版本控制
 
-构建输出将按以下结构组织：
-```
-build/
-├── bin/              # 可执行文件
-│   ├── Debug/       # Debug版本
-│   └── Release/     # Release版本
-└── lib/             # 库文件
-    ├── Debug/
-    └── Release/
-```
+项目包含完整的版本信息追踪：
+- 项目版本号
+- Git 提交信息
+- 构建时间戳
+- 编译器信息
+- 构建类型
 
 ## 打包说明
 
-项目支持使用CPack进行打包：
-
+### Windows
 ```bash
-# 在build目录下执行
-cpack
+cmake --build --preset windows-release --target package
 ```
 
-打包输出将位于 `build/package` 目录。
+### macOS
+```bash
+cmake --build --preset macos-release --target package
+```
 
-## 注意事项
+### Linux
+```bash
+cmake --build --preset linux-release --target package
+```
 
-1. 确保vcpkg正确安装并配置了环境变量
-2. Windows平台默认使用UTF-8编码
-3. 项目使用C++17标准
-4. 确保第三方库的依赖路径正确
+## 开发工具支持
 
-## 常见问题
+### 代码分析
+- Address Sanitizer：`cmake --preset asan`
+- Thread Sanitizer：`cmake --preset tsan`
+- UB Sanitizer：`cmake --preset ubsan`
 
-1. **找不到Qt**
-   - 检查Qt安装路径是否正确
-   - 确保Qt版本为Qt6
-   - 验证PATH环境变量中包含Qt bin目录
-
-2. **vcpkg相关错误**
-   - 确认`VCPKG_ROOT`环境变量设置正确
-   - 检查vcpkg.json中的依赖配置
-   - 尝试手动运行`vcpkg install`
-
-3. **编译错误**
-   - 确保使用了正确的编译器版本
-   - 检查是否满足C++17要求
-   - 验证所有必需的依赖库是否正确安装
+### 性能优化
+- LTO 支持（Release 模式）
+- 预编译头文件支持
+- ccache 编译缓存
 
 ## 许可证
 
