@@ -256,9 +256,9 @@ function(configure_runtime_dependencies TARGET_NAME)
     # 1. 处理自定义运行时依赖
     if(WIN32)
         set(RUNTIME_DLLS
-            "${ELAWIDGET_ROOT}/lib/elawidgettools.dll"
-            "${QWINDOWKIT_ROOT}/lib/QWKCore.dll"
-            "${QWINDOWKIT_ROOT}/lib/QWKWidgets.dll"
+            "${ELAWIDGET_LIB_DIR}/elawidgettools.dll"
+            "${QWINDOWKIT_LIB_DIR}/QWKCore.dll"
+            "${QWINDOWKIT_LIB_DIR}/QWKWidgets.dll"
         )
 
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
@@ -274,9 +274,9 @@ function(configure_runtime_dependencies TARGET_NAME)
         )
     elseif(APPLE)
         set(RUNTIME_LIBS
-            "${ELAWIDGET_ROOT}/lib/libelawidgettools.dylib"
-            "${QWINDOWKIT_ROOT}/lib/libQWKCore.dylib"
-            "${QWINDOWKIT_ROOT}/lib/libQWKWidgets.dylib"
+            "${ELAWIDGET_LIB_DIR}/libelawidgettools.dylib"
+            "${QWINDOWKIT_LIB_DIR}/libQWKCore.dylib"
+            "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dylib"
         )
 
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
@@ -292,9 +292,9 @@ function(configure_runtime_dependencies TARGET_NAME)
         )
     else()
         set(RUNTIME_LIBS
-            "${ELAWIDGET_ROOT}/lib/libelawidgettools.so"
-            "${QWINDOWKIT_ROOT}/lib/libQWKCore.so"
-            "${QWINDOWKIT_ROOT}/lib/libQWKWidgets.so"
+            "${ELAWIDGET_LIB_DIR}/libelawidgettools.so"
+            "${QWINDOWKIT_LIB_DIR}/libQWKCore.so"
+            "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.so"
         )
 
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD

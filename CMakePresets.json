@@ -29,6 +29,11 @@
       },
       "environment": {
         "PATH": "$penv{PATH};$env{QT_DIR}/bin"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "MinGW"
+        }
       }
     },
     {
@@ -47,6 +52,11 @@
       },
       "environment": {
         "PATH": "$penv{PATH};$env{QT_MSVC_DIR}/bin"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Visual Studio"
+        }
       }
     },
     {

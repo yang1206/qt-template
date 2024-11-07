@@ -26,8 +26,23 @@ endforeach ()
 
 # ========== 项目路径配置 ==========
 set(THIRD_PARTY_ROOT ${PROJECT_ROOT}/3rd) # 第三方库根目录
+
+# 根据编译器类型设置库文件子目录
+if (MSVC)
+    set(COMPILER_SPECIFIC_DIR "msvc")
+elseif (MINGW)
+    set(COMPILER_SPECIFIC_DIR "mingw")
+elseif (APPLE)
+    set(COMPILER_SPECIFIC_DIR "clang")
+else ()
+    set(COMPILER_SPECIFIC_DIR "gcc")
+endif ()
+
+# 更新库目录路径
 set(ELAWIDGET_ROOT ${THIRD_PARTY_ROOT}/elawidget) # ElaWidget库目录
+set(ELAWIDGET_LIB_DIR ${ELAWIDGET_ROOT}/lib/${COMPILER_SPECIFIC_DIR})
 set(QWINDOWKIT_ROOT ${THIRD_PARTY_ROOT}/qwindowkit) # QWindowKit库目录
+set(QWINDOWKIT_LIB_DIR ${QWINDOWKIT_ROOT}/lib/${COMPILER_SPECIFIC_DIR})
 
 # ========== 库文件配置 ==========
 function(configure_library_paths)
@@ -74,6 +89,9 @@ function(get_library_path OUT_VAR LIB_NAME)
     # 解析函数参数
     cmake_parse_arguments(PARSE_ARGV 2 ARG "STATIC;SHARED;IMPORT" "BASE_DIR" "")
 
+    # 确保使用编译器特定的子目录
+    set(FULL_BASE_DIR "${ARG_BASE_DIR}/${COMPILER_SPECIFIC_DIR}")
+
     # 根据库类型选择后缀
     if (ARG_STATIC)
         set(SUFFIX ${LIB_SUFFIXES_STATIC_SUFFIX})
@@ -93,7 +111,7 @@ function(get_library_path OUT_VAR LIB_NAME)
     endif ()
 
     # 构建完整的库文件路径
-    set(${OUT_VAR} "${ARG_BASE_DIR}/lib/${PREFIX}${LIB_NAME}${SUFFIX}" PARENT_SCOPE)
+    set(${OUT_VAR} "${FULL_BASE_DIR}/${PREFIX}${LIB_NAME}${SUFFIX}" PARENT_SCOPE)
 endfunction()
 
 # ========== 依赖配置 ==========
@@ -124,29 +142,29 @@ function(configure_dependencies TARGET_NAME)
     # 根据平台设置库文件列表
     if (APPLE)
         set(LOCAL_DEPS_LIBS
-                "${ELAWIDGET_ROOT}/lib/libelawidgettools.dylib"
-                "${QWINDOWKIT_ROOT}/lib/libQWKCore.dylib"
-                "${QWINDOWKIT_ROOT}/lib/libQWKWidgets.dylib"
+                "${ELAWIDGET_LIB_DIR}/libelawidgettools.dylib"
+                "${QWINDOWKIT_LIB_DIR}/libQWKCore.dylib"
+                "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dylib"
         )
     elseif (WIN32)
         if (MSVC)
             set(LOCAL_DEPS_LIBS
-                    "${ELAWIDGET_ROOT}/lib/elawidgettools.lib"
-                    "${QWINDOWKIT_ROOT}/lib/QWKCore.lib"
-                    "${QWINDOWKIT_ROOT}/lib/QWKWidgets.lib"
+                    "${ELAWIDGET_LIB_DIR}/elawidgettools.lib"
+                    "${QWINDOWKIT_LIB_DIR}/QWKCore.lib"
+                    "${QWINDOWKIT_LIB_DIR}/QWKWidgets.lib"
             )
         else ()
             set(LOCAL_DEPS_LIBS
-                    "${ELAWIDGET_ROOT}/lib/libelawidgettools.a"
-                    "${QWINDOWKIT_ROOT}/lib/libQWKCore.dll.a"
-                    "${QWINDOWKIT_ROOT}/lib/libQWKWidgets.dll.a"
+                    "${ELAWIDGET_LIB_DIR}/libelawidgettools.a"
+                    "${QWINDOWKIT_LIB_DIR}/libQWKCore.dll.a"
+                    "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dll.a"
             )
         endif ()
     else ()
         set(LOCAL_DEPS_LIBS
-                "${ELAWIDGET_ROOT}/lib/libelawidgettools.so"
-                "${QWINDOWKIT_ROOT}/lib/libQWKCore.so"
-                "${QWINDOWKIT_ROOT}/lib/libQWKWidgets.so"
+                "${ELAWIDGET_LIB_DIR}/libelawidgettools.so"
+                "${QWINDOWKIT_LIB_DIR}/libQWKCore.so"
+                "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.so"
         )
     endif ()
 
