@@ -45,6 +45,7 @@ endif ()
 # ==================== 源文件配置 ====================
 # 收集所有源文件
 file(GLOB_RECURSE PROJECT_SOURCES
+        CONFIGURE_DEPENDS
         "${PROJECT_ROOT}/src/*.cpp"
         "${PROJECT_ROOT}/src/*.h"
         "${THIRD_PARTY_ROOT}/qcustomplot/*.cpp"
@@ -60,7 +61,7 @@ file(GLOB UI_FILES
 # 收集资源文件
 set(PROJECT_RESOURCES
         ${PROJECT_ROOT}/res/icon.qrc
-        ${ELAWIDGET_ROOT}/include/ElaWidgetTools.qrc
+        ${PROJECT_ROOT}/res/qwindowkit.qrc
 )
 
 # 设置 Qt 自动工具选项
@@ -71,11 +72,19 @@ set(CMAKE_AUTORCC ON) # 自动处理资源文件
 # 根据平台配置可执行文件类型
 if (WIN32)
     # Windows 平台：创建 GUI 应用程序（无控制台窗口）
-    add_executable(${PROJECT_NAME} WIN32
-            ${PROJECT_SOURCES}
-            ${UI_FILES}
-            ${PROJECT_RESOURCES}
-    )
+    if (DEBUG)
+        add_executable(${PROJECT_NAME}
+                ${PROJECT_SOURCES}
+                ${UI_FILES}
+                ${PROJECT_RESOURCES}
+        )
+    else ()
+        add_executable(${PROJECT_NAME} WIN32
+                ${PROJECT_SOURCES}
+                ${UI_FILES}
+                ${PROJECT_RESOURCES}
+        )
+    endif ()
 elseif (APPLE)
     # macOS 平台：创建应用程序包（.app）
     add_executable(${PROJECT_NAME} MACOSX_BUNDLE

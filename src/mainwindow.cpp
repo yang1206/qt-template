@@ -1,51 +1,126 @@
 #include "mainwindow.h"
-#include <ElaMessageBar.h>
-#include <ElaTheme.h>
 #include <QIcon>
-#include <QTimer>
+#include <QMenuBar>
+#include <QMessageBox>
 #include <QVBoxLayout>
 #include <complex>
-#include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    ElaWindow(parent), ui(new Ui::MainWindow), m_updateTimer(new QTimer(this)) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_plot(nullptr), m_fftPlot(nullptr) {
+    setAttribute(Qt::WA_DontCreateNativeAncestors);
+    // 安装窗口代理
+    installWindowAgent();
+
     setWindowIcon(QIcon(":/icon/icon/windows/app.ico"));
-    ui->setupUi(this);
     initializeUI();
     setupConnections();
-
+    setupThemeDetection();
     // 初始化空图表
     m_plot->replot();
     m_fftPlot->replot();
 }
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow() = default;
+
+
+void MainWindow::installWindowAgent() {
+    // 1. 创建并设置窗口代理
+    windowAgent = new QWK::WidgetWindowAgent(this);
+    windowAgent->setup(this);
+
+    // 2. 创建标题标签
+    auto titleLabel = new QLabel(tr("QT Demo"));
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setObjectName("win-title-label");
+
+    // 3. 创建WindowBar
+    auto windowBar = new QWK::WindowBar(this);
+    windowBar->setTitleLabel(titleLabel);
+    windowBar->setHostWidget(this);
+
+#ifndef Q_OS_MAC
+    // 非Mac平台：创建自定义窗口按钮
+    auto iconButton = new QWK::WindowButton(this);
+    iconButton->setObjectName("icon-button");
+    iconButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    auto minButton = new QWK::WindowButton(this);
+    minButton->setObjectName("min-button");
+    minButton->setProperty("system-button", true);
+    minButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    auto maxButton = new QWK::WindowButton(this);
+    maxButton->setObjectName("max-button");
+    maxButton->setProperty("system-button", true);
+    maxButton->setCheckable(true);
+    maxButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    auto closeButton = new QWK::WindowButton(this);
+    closeButton->setObjectName("close-button");
+    closeButton->setProperty("system-button", true);
+    closeButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    // 设置按钮到WindowBar
+    windowBar->setIconButton(iconButton);
+    windowBar->setMinButton(minButton);
+    windowBar->setMaxButton(maxButton);
+    windowBar->setCloseButton(closeButton);
+
+    // 设置系统按钮
+    windowAgent->setSystemButton(QWK::WindowAgentBase::WindowIcon, iconButton);
+    windowAgent->setSystemButton(QWK::WindowAgentBase::Minimize, minButton);
+    windowAgent->setSystemButton(QWK::WindowAgentBase::Maximize, maxButton);
+    windowAgent->setSystemButton(QWK::WindowAgentBase::Close, closeButton);
+
+    // 连接按钮信号
+    connect(windowBar, &QWK::WindowBar::minimizeRequested, this, &QWidget::showMinimized);
+    connect(windowBar, &QWK::WindowBar::maximizeRequested, this, [this, maxButton](bool max) {
+        if (max) {
+            showMaximized();
+        } else {
+            showNormal();
+        }
+        QTimer::singleShot(0, maxButton,
+                           [maxButton]() { QCoreApplication::postEvent(maxButton, new QEvent(QEvent::Leave)); });
+    });
+    connect(windowBar, &QWK::WindowBar::closeRequested, this, &QWidget::close);
+#else
+    // Mac平台：设置系统按钮区域
+    windowAgent->setSystemButtonAreaCallback([](const QSize &size) {
+        static constexpr const int width = 75;
+        return QRect(QPoint(size.width() - width, 0), QSize(width, size.height()));
+    });
+#endif
+
+    // 4. 设置标题栏
+    windowAgent->setTitleBar(windowBar);
+    setMenuWidget(windowBar);
+}
 
 void MainWindow::initializeUI() {
-    // 设置窗口标题和大小
-    setWindowTitle("ElaWidgetTools & QCustomPlot Demo");
-    resize(800, 600);
-    setStatusBar(nullptr);
+    // 创建一个widget作为中央部件
+    const auto centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
+
     // 创建主布局
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget());
+    auto *mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setSpacing(10);
-    mainLayout->setContentsMargins(10, 10, 10, 10);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
 
     // 创建按钮
-    m_button = new ElaPushButton("更新数据", this);
+    m_button = new QPushButton(tr("更新数据"), this);
     mainLayout->addWidget(m_button);
 
     // 添加水平布局来放置两个图表
-    QHBoxLayout *plotLayout = new QHBoxLayout();
+    auto *plotLayout = new QHBoxLayout();
     mainLayout->addLayout(plotLayout);
 
     // 左侧时域图表
     m_plot = new QCustomPlot(this);
-    plotLayout->addWidget(m_plot);
+    plotLayout->addWidget(m_plot, 1); // 添加拉伸因子
 
     // 右侧频域图表
     m_fftPlot = new QCustomPlot(this);
-    plotLayout->addWidget(m_fftPlot);
+    plotLayout->addWidget(m_fftPlot, 1); // 添加拉伸因子
 
     // 配置时域图表
     m_plot->addGraph();
@@ -78,21 +153,46 @@ void MainWindow::initializeUI() {
     m_fftPlot->yAxis->setLabelFont(QFont("Arial", 10));
 
     // 添加 FFT 按钮
-    m_fftButton = new ElaPushButton("执行FFT", this);
+    m_fftButton = new QPushButton(tr("执行FFT"), this);
     mainLayout->addWidget(m_fftButton);
 
-    // 设置窗口按钮
-    setWindowButtonFlags(ElaAppBarType::MinimizeButtonHint | ElaAppBarType::MaximizeButtonHint |
-                         ElaAppBarType::CloseButtonHint | ElaAppBarType::ThemeChangeButtonHint);
+    // 设置窗口属性
+    setWindowTitle(tr("QT Demo"));
+    resize(800, 600);
+}
+
+void MainWindow::setupThemeDetection() {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    // 使用新的 colorScheme API
+    connect(qApp->styleHints(), &QStyleHints::colorSchemeChanged, this, [this](Qt::ColorScheme scheme) {
+        const bool isDark = (scheme == Qt::ColorScheme::Dark);
+        updateTheme(isDark);
+    });
+
+    // 初始化主题
+    bool isDark = (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark);
+    updateTheme(isDark);
+#else
+    // 回退方案:通过比较调色板颜色判断
+    auto checkTheme = [this]() {
+        const QPalette defaultPalette;
+        bool isDark = defaultPalette.color(QPalette::WindowText).lightness() >
+                      defaultPalette.color(QPalette::Window).lightness();
+        updatePlotsTheme(isDark);
+    };
+
+    // 监听调色板变化
+    connect(qApp, &QApplication::paletteChanged, this, checkTheme);
+
+    // 初始化主题
+    checkTheme();
+#endif
 }
 
 void MainWindow::setupConnections() {
-    // 连接主题变更信号
-    connect(eTheme, &ElaTheme::themeModeChanged, this, &MainWindow::onThemeChanged);
-
     // 连接按钮点击信号
-    connect(m_button, &ElaPushButton::clicked, this, &MainWindow::updatePlot);
-    connect(m_fftButton, &ElaPushButton::clicked, this, &MainWindow::performFFT);
+    connect(m_button, &QPushButton::clicked, this, &MainWindow::updatePlot);
+    connect(m_fftButton, &QPushButton::clicked, this, &MainWindow::performFFT);
 }
 
 void MainWindow::updatePlot() {
@@ -113,13 +213,13 @@ void MainWindow::updatePlot() {
     m_fftPlot->replot();
 
     // 生成新的数据
-    double dt = 0.001;
-    double T = 20.0;
+    constexpr double dt = 0.001;
+    constexpr double T = 20.0;
 
     for (double t = 0; t < T; t += dt) {
         x.append(t);
-        double signal = 0.5 * sin(2 * M_PI * 2 * t) + 0.3 * sin(2 * M_PI * 5 * t) + 0.2 * sin(2 * M_PI * 10 * t) +
-                        0.15 * sin(2 * M_PI * 15 * t) + 0.1 * sin(2 * M_PI * 20 * t);
+        const double signal = 0.5 * sin(2 * M_PI * 2 * t) + 0.3 * sin(2 * M_PI * 5 * t) + 0.2 * sin(2 * M_PI * 10 * t) +
+                              0.15 * sin(2 * M_PI * 15 * t) + 0.1 * sin(2 * M_PI * 20 * t);
         m_timeData.append(signal);
     }
 
@@ -131,9 +231,7 @@ void MainWindow::updatePlot() {
 void MainWindow::performFFT() {
     // 检查是否有数据
     if (m_timeData.isEmpty()) {
-        // 使用 ElaWidgetTools 的消息框显示警告
-        ElaMessageBar::error(ElaMessageBarType::BottomRight, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。",
-                             5000);
+        QMessageBox::warning(this, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。", QMessageBox::Ok);
         return;
     }
 
@@ -146,8 +244,8 @@ void MainWindow::performFFT() {
     int N = m_timeData.size();
 
     // 分配 FFTW 内存
-    float *in = (float *) fftwf_malloc(sizeof(float) * N);
-    fftwf_complex *out = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * (N / 2 + 1));
+    auto *in = static_cast<float *>(fftwf_malloc(sizeof(float) * N));
+    auto *out = static_cast<fftwf_complex *>(fftwf_malloc(sizeof(fftwf_complex) * (N / 2 + 1)));
 
     // 应用汉宁窗
     for (int i = 0; i < N; i++) {
@@ -196,7 +294,7 @@ void MainWindow::performFFT() {
     for (int i = 0; i < frequencies.size(); i++) {
         if (magnitudes[i] > 0.1) {
             // 只标记主要峰值
-            QCPItemText *textLabel = new QCPItemText(m_fftPlot);
+            auto *textLabel = new QCPItemText(m_fftPlot);
             textLabel->position->setType(QCPItemPosition::ptPlotCoords);
             textLabel->position->setCoords(frequencies[i], magnitudes[i] + 0.02);
             textLabel->setText(QString::number(frequencies[i], 'f', 1) + "Hz");
@@ -220,10 +318,10 @@ void MainWindow::performFFT() {
     fftwf_free(out);
 }
 
-void MainWindow::onThemeChanged(ElaThemeType::ThemeMode mode) {
+void MainWindow::updateTheme(bool isDark)const {
     // 更新两个图表的主题
-    QColor textColor = (mode == ElaThemeType::Dark) ? Qt::white : Qt::black;
-    QColor bgColor = (mode == ElaThemeType::Dark) ? QColor(32, 32, 32) : Qt::white;
+    QColor textColor = isDark ? Qt::white : Qt::black;
+    QColor bgColor = isDark ? QColor(32, 32, 32) : Qt::white;
 
     auto updatePlotTheme = [textColor, bgColor](QCustomPlot *plot) {
         plot->setBackground(bgColor);

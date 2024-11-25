@@ -39,8 +39,6 @@ else ()
 endif ()
 
 # 更新库目录路径
-set(ELAWIDGET_ROOT ${THIRD_PARTY_ROOT}/elawidget) # ElaWidget库目录
-set(ELAWIDGET_LIB_DIR ${ELAWIDGET_ROOT}/lib/${COMPILER_SPECIFIC_DIR})
 set(QWINDOWKIT_ROOT ${THIRD_PARTY_ROOT}/qwindowkit) # QWindowKit库目录
 set(QWINDOWKIT_LIB_DIR ${QWINDOWKIT_ROOT}/lib/${COMPILER_SPECIFIC_DIR})
 
@@ -134,15 +132,13 @@ function(configure_dependencies TARGET_NAME)
 
     # 2. 本地库文件依赖配置
     set(LOCAL_DEPS_INCLUDE
-            "${ELAWIDGET_ROOT}/include"
-            "${QWINDOWKIT_ROOT}/include"
+            "${QWINDOWKIT_ROOT}/include/QWindowKit"
             "${THIRD_PARTY_ROOT}/qcustomplot"
     )
 
     # 根据平台设置库文件列表
     if (APPLE)
         set(LOCAL_DEPS_LIBS
-                "${ELAWIDGET_LIB_DIR}/libelawidgettools.dylib"
                 "${QWINDOWKIT_LIB_DIR}/libQWKCore.dylib"
                 "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dylib"
         )
@@ -155,14 +151,12 @@ function(configure_dependencies TARGET_NAME)
             )
         else ()
             set(LOCAL_DEPS_LIBS
-                    "${ELAWIDGET_LIB_DIR}/libelawidgettools.a"
                     "${QWINDOWKIT_LIB_DIR}/libQWKCore.dll.a"
                     "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dll.a"
             )
         endif ()
     else ()
         set(LOCAL_DEPS_LIBS
-                "${ELAWIDGET_LIB_DIR}/libelawidgettools.so"
                 "${QWINDOWKIT_LIB_DIR}/libQWKCore.so"
                 "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.so"
         )

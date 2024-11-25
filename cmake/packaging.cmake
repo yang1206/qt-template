@@ -256,7 +256,6 @@ function(configure_runtime_dependencies TARGET_NAME)
     # 1. 处理自定义运行时依赖
     if(WIN32)
         set(RUNTIME_DLLS
-            "${ELAWIDGET_LIB_DIR}/elawidgettools.dll"
             "${QWINDOWKIT_LIB_DIR}/QWKCore.dll"
             "${QWINDOWKIT_LIB_DIR}/QWKWidgets.dll"
         )
@@ -274,7 +273,6 @@ function(configure_runtime_dependencies TARGET_NAME)
         )
     elseif(APPLE)
         set(RUNTIME_LIBS
-            "${ELAWIDGET_LIB_DIR}/libelawidgettools.dylib"
             "${QWINDOWKIT_LIB_DIR}/libQWKCore.dylib"
             "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dylib"
         )
@@ -292,7 +290,6 @@ function(configure_runtime_dependencies TARGET_NAME)
         )
     else()
         set(RUNTIME_LIBS
-            "${ELAWIDGET_LIB_DIR}/libelawidgettools.so"
             "${QWINDOWKIT_LIB_DIR}/libQWKCore.so"
             "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.so"
         )
