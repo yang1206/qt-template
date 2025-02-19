@@ -1,25 +1,21 @@
 #include "mainwindow.h"
 #include <ElaMessageBar.h>
 #include <ElaTheme.h>
-#include <QIcon>
-#include <QTimer>
-#include <QVBoxLayout>
 #include <complex>
-#include "ui_mainwindow.h"
+#include "utils/theme_manager.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    ElaWindow(parent), ui(new Ui::MainWindow), m_updateTimer(new QTimer(this)) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
     setWindowIcon(QIcon(":/icon/icon/windows/app.ico"));
-    ui->setupUi(this);
     initializeUI();
     setupConnections();
 
     // 初始化空图表
     m_plot->replot();
     m_fftPlot->replot();
+    ThemeManager::instance().notifyThemeChange();
 }
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow() {}
 
 void MainWindow::initializeUI() {
     // 设置窗口标题和大小
@@ -27,9 +23,11 @@ void MainWindow::initializeUI() {
     resize(800, 600);
     setStatusBar(nullptr);
     // 创建主布局
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget());
+    auto *centralWidget = new QWidget(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setSpacing(10);
     mainLayout->setContentsMargins(10, 10, 10, 10);
+    setCentralWidget(centralWidget);
 
     // 创建按钮
     m_button = new ElaPushButton("更新数据", this);
@@ -80,16 +78,11 @@ void MainWindow::initializeUI() {
     // 添加 FFT 按钮
     m_fftButton = new ElaPushButton("执行FFT", this);
     mainLayout->addWidget(m_fftButton);
-
-    // 设置窗口按钮
-    setWindowButtonFlags(ElaAppBarType::MinimizeButtonHint | ElaAppBarType::MaximizeButtonHint |
-                         ElaAppBarType::CloseButtonHint | ElaAppBarType::ThemeChangeButtonHint);
 }
 
 void MainWindow::setupConnections() {
     // 连接主题变更信号
-    connect(eTheme, &ElaTheme::themeModeChanged, this, &MainWindow::onThemeChanged);
-
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this]() { onThemeChanged(); });
     // 连接按钮点击信号
     connect(m_button, &ElaPushButton::clicked, this, &MainWindow::updatePlot);
     connect(m_fftButton, &ElaPushButton::clicked, this, &MainWindow::performFFT);
@@ -220,10 +213,12 @@ void MainWindow::performFFT() {
     fftwf_free(out);
 }
 
-void MainWindow::onThemeChanged(ElaThemeType::ThemeMode mode) {
+void MainWindow::onThemeChanged() {
+    auto &theme = ThemeManager::instance();
+    bool isDark = theme.isDarkMode();
     // 更新两个图表的主题
-    QColor textColor = (mode == ElaThemeType::Dark) ? Qt::white : Qt::black;
-    QColor bgColor = (mode == ElaThemeType::Dark) ? QColor(32, 32, 32) : Qt::white;
+    QColor textColor = isDark ? Qt::white : Qt::black;
+    QColor bgColor = isDark ? QColor(32, 32, 32) : Qt::white;
 
     auto updatePlotTheme = [textColor, bgColor](QCustomPlot *plot) {
         plot->setBackground(bgColor);

@@ -2,18 +2,11 @@
 #define MAINWINDOW_H
 
 #include <ElaPushButton.h>
-#include <ElaTabWidget.h>
-#include <ElaToolBar.h>
-#include <ElaWindow.h>
 #include <QMainWindow>
 #include <qcustomplot.h>
 #include "fftw3.h"
 
-QT_BEGIN_NAMESPACE namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
-
-
-class MainWindow : public ElaWindow {
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -22,7 +15,7 @@ public:
 
 private slots:
     void updatePlot();
-    void onThemeChanged(ElaThemeType::ThemeMode mode);
+    void onThemeChanged();
     void performFFT();
 
 private:
@@ -31,7 +24,6 @@ private:
     void setupFFTPlot();
 
 private:
-    Ui::MainWindow *ui;
     QCustomPlot *m_plot;
     QCustomPlot *m_fftPlot;
     ElaPushButton *m_button;

@@ -135,7 +135,6 @@ function(configure_dependencies TARGET_NAME)
     # 2. 本地库文件依赖配置
     set(LOCAL_DEPS_INCLUDE
             "${ELAWIDGET_ROOT}/include"
-            "${QWINDOWKIT_ROOT}/include"
             "${THIRD_PARTY_ROOT}/qcustomplot"
     )
 
@@ -143,28 +142,20 @@ function(configure_dependencies TARGET_NAME)
     if (APPLE)
         set(LOCAL_DEPS_LIBS
                 "${ELAWIDGET_LIB_DIR}/libelawidgettools.dylib"
-                "${QWINDOWKIT_LIB_DIR}/libQWKCore.dylib"
-                "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dylib"
         )
     elseif (WIN32)
         if (MSVC)
             set(LOCAL_DEPS_LIBS
                     "${ELAWIDGET_LIB_DIR}/elawidgettools.lib"
-                    "${QWINDOWKIT_LIB_DIR}/QWKCore.lib"
-                    "${QWINDOWKIT_LIB_DIR}/QWKWidgets.lib"
             )
         else ()
             set(LOCAL_DEPS_LIBS
                     "${ELAWIDGET_LIB_DIR}/libelawidgettools.a"
-                    "${QWINDOWKIT_LIB_DIR}/libQWKCore.dll.a"
-                    "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.dll.a"
             )
         endif ()
     else ()
         set(LOCAL_DEPS_LIBS
                 "${ELAWIDGET_LIB_DIR}/libelawidgettools.so"
-                "${QWINDOWKIT_LIB_DIR}/libQWKCore.so"
-                "${QWINDOWKIT_LIB_DIR}/libQWKWidgets.so"
         )
     endif ()
 
@@ -260,10 +251,6 @@ function(configure_qt_auto_tools)
             ${PROJECT_ROOT}/src
             PARENT_SCOPE
     )
-
-    # 设置生成的 UI 文件输出目录
-    set(CMAKE_AUTOUIC_OUTPUT_LOCATION "${CMAKE_BINARY_DIR}/generated/ui" PARENT_SCOPE)
-    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/ui")
 
 
     # 查找Qt包
