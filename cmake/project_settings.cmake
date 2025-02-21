@@ -41,8 +41,7 @@ endif ()
 # 更新库目录路径
 set(ELAWIDGET_ROOT ${THIRD_PARTY_ROOT}/elawidget) # ElaWidget库目录
 set(ELAWIDGET_LIB_DIR ${ELAWIDGET_ROOT}/lib/${COMPILER_SPECIFIC_DIR})
-set(QWINDOWKIT_ROOT ${THIRD_PARTY_ROOT}/qwindowkit) # QWindowKit库目录
-set(QWINDOWKIT_LIB_DIR ${QWINDOWKIT_ROOT}/lib/${COMPILER_SPECIFIC_DIR})
+
 
 # ========== 库文件配置 ==========
 function(configure_library_paths)
@@ -137,7 +136,13 @@ function(configure_dependencies TARGET_NAME)
             "${ELAWIDGET_ROOT}/include"
             "${THIRD_PARTY_ROOT}/qcustomplot"
     )
-
+    # 验证包含目录是否存在
+    foreach(INC_DIR IN LISTS LOCAL_DEPS_INCLUDE)
+        if(NOT EXISTS "${INC_DIR}")
+            message(WARNING "Include directory does not exist: ${INC_DIR}")
+            list(REMOVE_ITEM LOCAL_DEPS_INCLUDE "${INC_DIR}")
+        endif()
+    endforeach()
     # 根据平台设置库文件列表
     if (APPLE)
         set(LOCAL_DEPS_LIBS

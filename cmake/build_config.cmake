@@ -139,6 +139,18 @@ function(configure_gcc_clang_options TARGET_NAME)
     endif ()
 endfunction()
 
+# 添加 LTO 支持检测函数
+function(check_lto_support OUT_VAR)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT ${OUT_VAR} OUTPUT error)
+    if(${OUT_VAR})
+        message(STATUS "LTO/IPO supported")
+    else()
+        message(STATUS "LTO/IPO not supported: ${error}")
+    endif()
+    set(${OUT_VAR} ${${OUT_VAR}} PARENT_SCOPE)
+endfunction()
+
 # ========== 构建类型特定配置 ==========
 function(configure_build_type_options TARGET_NAME)
     if (NOT MSVC)
@@ -151,13 +163,18 @@ function(configure_build_type_options TARGET_NAME)
             target_compile_options(${TARGET_NAME} PRIVATE -O3)
 
             # 链接时优化 (LTO) 配置
-            if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-                target_compile_options(${TARGET_NAME} PRIVATE -flto -fno-fat-lto-objects)
-                set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "-flto")
-            elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-                target_compile_options(${TARGET_NAME} PRIVATE -flto=thin)
-                set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "-flto=thin")
-            endif ()
+            check_lto_support(LTO_SUPPORTED)
+            if(LTO_SUPPORTED)
+                if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                    target_compile_options(${TARGET_NAME} PRIVATE -flto -fno-fat-lto-objects)
+                    set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "-flto")
+                elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                    target_compile_options(${TARGET_NAME} PRIVATE -flto=thin)
+                    set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "-flto=thin")
+                endif()
+                # 启用 CMake 的 IPO 支持
+                set_property(TARGET ${TARGET_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+            endif()
 
             target_compile_definitions(${TARGET_NAME} PRIVATE NDEBUG)
 
