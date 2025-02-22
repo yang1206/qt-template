@@ -126,7 +126,7 @@ void MainWindow::performFFT() {
     if (m_timeData.isEmpty()) {
         // 使用 ElaWidgetTools 的消息框显示警告
         ElaMessageBar::error(ElaMessageBarType::BottomRight, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。",
-                             5000);
+                             5000, this);
         return;
     }
 
