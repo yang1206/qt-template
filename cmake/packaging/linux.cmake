@@ -3,7 +3,7 @@ include_guard(GLOBAL)
 
 function(configure_linux_installation TARGET_NAME)
     # 设置打包生成器
-    set(CPACK_GENERATOR "DEB;RPM" PARENT_SCOPE)
+    set(CPACK_GENERATOR "DEB;RPM")
 
     # DEB 包配置
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Your Name <your.email@example.com>")

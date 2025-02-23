@@ -10,5 +10,17 @@ int main(int argc, char *argv[]) {
     ThemeManager::instance();
     MainWindow w;
     w.show();
+
+#ifdef NDEBUG
+    qDebug() << "Release Build";
+#else
+    qDebug() << "Debug Build";
+#endif
+
+#ifdef QT_DEBUG
+    qDebug() << "Qt Debug Mode";
+#else
+    qDebug() << "Qt Release Mode";
+#endif
     return a.exec();
 }

@@ -14,6 +14,13 @@ set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(THIRD_PARTY_ROOT ${PROJECT_ROOT}/3rd)
 set(ELAWIDGET_ROOT ${THIRD_PARTY_ROOT}/elawidget)
 
+# 设置版本信息变量
+set(VERSION_PROJECT_NAME ${PROJECT_NAME})
+set(VERSION_PROJECT_VERSION ${PROJECT_VERSION})
+set(VERSION_BUILD_TYPE "$<CONFIG>")
+set(VERSION_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
+set(VERSION_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION})
+
 #加载平台相关配置
 include(${PROJECT_ROOT}/cmake/core/platform.cmake)
 configure_platform_variables()
@@ -57,6 +64,15 @@ set(PROJECT_RESOURCES
 
 # 创建目标
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${UI_FILES} ${PROJECT_RESOURCES})
+
+# 配置版本控制
+include(${PROJECT_ROOT}/cmake/version_control.cmake)
+add_build_time_target(${PROJECT_NAME})
+
+# 添加生成的版本头文件目录到包含路径
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
+
 if (WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
 elseif (APPLE)
@@ -65,6 +81,7 @@ elseif (APPLE)
             MACOSX_BUNDLE_GUI_IDENTIFIER "com.yourcompany.${PROJECT_NAME}"
     )
 endif ()
+
 
 if (ENABLE_PCH)
     configure_pch(${PROJECT_NAME})
@@ -91,6 +108,22 @@ configure_testing()
 include(${PROJECT_ROOT}/cmake/packaging/common.cmake)
 configure_package_info()
 configure_installation(${PROJECT_NAME})
+
+# 更新版本信息的目标（使用现有的 generate_version_file 函数）
+add_custom_target(update_version
+        COMMAND ${CMAKE_COMMAND}
+        -DSCRIPT_MODE=ON
+        -DPROJECT_ROOT=${PROJECT_ROOT}
+        -DVERSION_PROJECT_NAME=${VERSION_PROJECT_NAME}
+        -DVERSION_PROJECT_VERSION=${VERSION_PROJECT_VERSION}
+        -DVERSION_BUILD_TYPE=${VERSION_BUILD_TYPE}
+        -DVERSION_COMPILER_ID=${VERSION_COMPILER_ID}
+        -DVERSION_COMPILER_VERSION=${VERSION_COMPILER_VERSION}
+        -DOUTPUT_DIR=${CMAKE_BINARY_DIR}/generated
+        -P ${PROJECT_ROOT}/cmake/version_control.cmake
+        WORKING_DIRECTORY ${PROJECT_ROOT}
+        COMMENT "Updating version information..."
+)
 
 
 include(CPack)

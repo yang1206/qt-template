@@ -2,13 +2,62 @@
 include_guard(GLOBAL)
 
 function(configure_windows_installation TARGET_NAME)
-    set(CPACK_GENERATOR "WIX;ZIP" PARENT_SCOPE)
+    # 设置打包生成器
+    set(CPACK_GENERATOR "WIX;NSIS" PARENT_SCOPE)
 
-    # WiX 配置
-    set(CPACK_WIX_UPGRADE_GUID "12345678-1234-1234-1234-123456789012")
-    set(CPACK_WIX_PRODUCT_ICON "${PROJECT_ROOT}/res/icon/windows/app.ico")
-    set(CPACK_WIX_UI_BANNER "${PROJECT_ROOT}/res/icon/windows/banner.png")
-    set(CPACK_WIX_UI_DIALOG "${PROJECT_ROOT}/res/icon/windows/dialog.png")
+    # 禁用其他生成器
+    set(CPACK_BINARY_NSIS OFF PARENT_SCOPE)
+    set(CPACK_BINARY_ZIP OFF PARENT_SCOPE)
+
+    # ==================== WiX 配置 ====================
+    # UPGRADE_GUID 用于标识应用程序的唯一性，用于升级识别
+    # 生成方法：
+    # 1. 使用 PowerShell: [guid]::NewGuid()
+    # 2. 使用在线工具: https://www.guidgenerator.com/
+    # 3. 使用 Visual Studio: 工具 -> 创建 GUID
+    # 注意：一旦设置后不要更改，否则 Windows 会将其视为不同的应用程序
+    set(CPACK_WIX_UPGRADE_GUID "12345678-1234-1234-1234-123456789012" PARENT_SCOPE)
+
+    # WiX 基本设置
+    set(CPACK_WIX_PRODUCT_ICON "${PROJECT_ROOT}/res/icon/windows/app.ico" PARENT_SCOPE)
+    set(CPACK_WIX_UI_REF "WixUI_Minimal" PARENT_SCOPE)  # 使用最简单的安装界面
+    set(CPACK_WIX_PROGRAM_MENU_FOLDER "${PROJECT_NAME}" PARENT_SCOPE)
+
+    # 启用 WiX 快捷方式
+    set(CPACK_WIX_FEATURE_LEVEL 1 PARENT_SCOPE)
+    set(CPACK_WIX_EXTRA_SOURCES "${PROJECT_ROOT}/res/icon/windows/shortcuts.wxs" PARENT_SCOPE)
+
+
+    # ==================== NSIS 配置 ====================
+    # NSIS 基本设置
+    set(CPACK_NSIS_MUI_ICON "${PROJECT_ROOT}/res/icon/windows/app.ico" PARENT_SCOPE)
+    set(CPACK_NSIS_MUI_UNIICON "${PROJECT_ROOT}/res/icon/windows/app.ico" PARENT_SCOPE)
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\${PROJECT_NAME}.exe" PARENT_SCOPE)
+
+    # NSIS 安装设置
+    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON PARENT_SCOPE)
+    set(CPACK_NSIS_MODIFY_PATH ON PARENT_SCOPE)
+
+    # NSIS 快捷方式配置
+    set(CPACK_NSIS_CREATE_ICONS_EXTRA
+            "CreateDirectory '$SMPROGRAMS\\\\${PROJECT_NAME}'
+         CreateShortCut '$SMPROGRAMS\\\\${PROJECT_NAME}\\\\${PROJECT_NAME}.lnk' '$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe'
+         CreateShortCut '$DESKTOP\\\\${PROJECT_NAME}.lnk' '$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe'"
+            PARENT_SCOPE
+    )
+
+    # NSIS 卸载时删除快捷方式
+    set(CPACK_NSIS_DELETE_ICONS_EXTRA
+            "Delete '$SMPROGRAMS\\\\${PROJECT_NAME}\\\\${PROJECT_NAME}.lnk'
+         RMDir '$SMPROGRAMS\\\\${PROJECT_NAME}'
+         Delete '$DESKTOP\\\\${PROJECT_NAME}.lnk'"
+            PARENT_SCOPE
+    )
+
+    # ==================== 通用配置 ====================
+    # 安装目录配置
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}" PARENT_SCOPE)
+
 
     # 处理运行时依赖
     get_platform_library_name("elawidgettools" RUNTIME_LIB)
@@ -33,4 +82,13 @@ function(configure_windows_installation TARGET_NAME)
                 DESTINATION ${RUNTIME_INSTALL_DIR}
         )
     endif ()
+
+    # 创建打包目标
+    add_custom_target(create_package
+            COMMAND ${CMAKE_COMMAND} -E echo "Creating Windows packages..."
+            COMMAND ${CMAKE_COMMAND} --build . --target package
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Creating Windows installers (WiX MSI and NSIS EXE)..."
+            VERBATIM
+    )
 endfunction()

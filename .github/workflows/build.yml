@@ -1,0 +1,54 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ cmake ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ windows-latest, macos-latest, ubuntu-latest ]
+        include:
+          - os: windows-latest
+            preset: windows-msvc
+          - os: macos-latest
+            preset: macos
+          - os: ubuntu-latest
+            preset: linux
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.5.*'
+
+      - name: Install vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 'f5ec6f30ff70f04f841436a0f36600bdbabfcfbf'
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}-release
+
+      - name: Package
+        run: |
+          cd build
+          cpack -C Release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages-${{ matrix.os }}
+          path: build/packages/*
