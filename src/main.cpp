@@ -2,7 +2,7 @@
 #include <QScreen>
 #include "ElaApplication.h"
 #include "mainwindow.h"
-#include "utils/theme_manager.h"
+#include "utils/theme/theme_manager.h"
 
 int main(int argc, char* argv[]) {
     QApplication a(argc, argv);

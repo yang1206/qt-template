@@ -45,6 +45,7 @@ endif ()
 
 # 收集源文件
 file(GLOB_RECURSE PROJECT_SOURCES
+        CONFIGURE_DEPENDS
         "${PROJECT_ROOT}/src/*.cpp"
         "${PROJECT_ROOT}/src/*.h"
         "${THIRD_PARTY_ROOT}/qcustomplot/*.cpp"
@@ -59,6 +60,7 @@ file(GLOB UI_FILES
 set(PROJECT_RESOURCES
         ${PROJECT_ROOT}/res/icon.qrc
         ${ELAWIDGET_ROOT}/include/ElaWidgetTools.qrc
+        src/utils/setting/settings_helper.h
 )
 
 

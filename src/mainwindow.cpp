@@ -2,12 +2,13 @@
 #include <ElaMessageBar.h>
 #include <ElaTheme.h>
 #include <complex>
-#include "utils/theme_manager.h"
+#include "utils/theme/theme_manager.h"
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
     setWindowIcon(QIcon(":/icon/icon/windows/app.ico"));
     initializeUI();
     setupConnections();
+
     // 初始化空图表
     m_plot->replot();
     m_fftPlot->replot();
