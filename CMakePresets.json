@@ -22,7 +22,7 @@
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       },
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "g++.exe",
         "CMAKE_PREFIX_PATH": "$env{QT_DIR}"
@@ -67,9 +67,10 @@
         "lhs": "${hostSystemName}",
         "rhs": "Darwin"
       },
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_POSITION_INDEPENDENT_CODE": "ON"
       }
     },
     {
