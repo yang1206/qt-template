@@ -3,11 +3,8 @@ include_guard(GLOBAL)
 
 function(configure_windows_installation TARGET_NAME)
     # 设置打包生成器
-    set(CPACK_GENERATOR "WIX;NSIS" PARENT_SCOPE)
+    set(CPACK_GENERATOR "NSIS;ZIP" PARENT_SCOPE)
 
-    # 禁用其他生成器
-    set(CPACK_BINARY_NSIS OFF PARENT_SCOPE)
-    set(CPACK_BINARY_ZIP OFF PARENT_SCOPE)
 
     # ==================== WiX 配置 ====================
     # UPGRADE_GUID 用于标识应用程序的唯一性，用于升级识别
@@ -22,6 +19,8 @@ function(configure_windows_installation TARGET_NAME)
     set(CPACK_WIX_PRODUCT_ICON "${PROJECT_ROOT}/res/icon/windows/app.ico" PARENT_SCOPE)
     set(CPACK_WIX_UI_REF "WixUI_Minimal" PARENT_SCOPE)  # 使用最简单的安装界面
     set(CPACK_WIX_PROGRAM_MENU_FOLDER "${PROJECT_NAME}" PARENT_SCOPE)
+
+    set(CPACK_RESOURCE_FILE_LICENSE "" PARENT_SCOPE)
 
     # 启用 WiX 快捷方式
     set(CPACK_WIX_FEATURE_LEVEL 1 PARENT_SCOPE)
@@ -54,34 +53,42 @@ function(configure_windows_installation TARGET_NAME)
             PARENT_SCOPE
     )
 
+    #=========== 压缩包配置 ============
+    set(CPACK_ARCHIVE_COMPONENT_INSTALL ON PARENT_SCOPE)
+    set(CPACK_ZIP_COMPONENT_INSTALL ON PARENT_SCOPE)
+
     # ==================== 通用配置 ====================
     # 安装目录配置
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}" PARENT_SCOPE)
 
 
     # 处理运行时依赖
-    get_platform_library_name("elawidgettools" RUNTIME_LIB)
-    set(RUNTIME_LIB_PATH "${ELAWIDGET_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}/${RUNTIME_LIB}")
+    if (WIN32 AND MSVC)
+        # 部署 elawidgettools
+        set(LIB_NAME "elawidgettools")
+        set(RUNTIME_LIB "${ELAWIDGET_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}/${LIB_NAME}${LIB_SHARED_SUFFIX}")
+        if (EXISTS "${RUNTIME_LIB}")
+            install(FILES "${RUNTIME_LIB}"
+                    DESTINATION ${RUNTIME_INSTALL_DIR}
+                    COMPONENT Runtime
+            )
+        endif ()
 
-    if (EXISTS "${RUNTIME_LIB_PATH}")
-        install(FILES "${RUNTIME_LIB_PATH}"
-                DESTINATION ${RUNTIME_INSTALL_DIR}
-                COMPONENT Runtime
-        )
+        # 部署 vcpkg 依赖
+        if (VCPKG_INSTALLED_DIR)
+            file(GLOB VCPKG_DLLS
+                    "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll"
+            )
+            install(FILES ${VCPKG_DLLS}
+                    DESTINATION ${RUNTIME_INSTALL_DIR}
+                    COMPONENT Runtime
+            )
+        endif ()
     endif ()
 
     # 部署依赖
     configure_qt_deployment(${TARGET_NAME})
 
-    # 安装 vcpkg 依赖
-    if (VCPKG_INSTALLED_DIR)
-        file(GLOB VCPKG_DLLS
-                "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll"
-        )
-        install(FILES ${VCPKG_DLLS}
-                DESTINATION ${RUNTIME_INSTALL_DIR}
-        )
-    endif ()
 
     # 创建打包目标
     add_custom_target(create_package

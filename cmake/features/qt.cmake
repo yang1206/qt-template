@@ -55,28 +55,40 @@ endfunction()
 
 # 内部函数：Windows Qt 部署
 function(_configure_qt_windows_deployment TARGET_NAME)
+
+    # 复制 Qt 库 ，如果你使用了下面的库，请从下方列表中删除
     set(DEPLOY_ARGS
             --verbose 2
-            --no-quick-import
-            --no-translations
-            --no-opengl-sw
-            --no-system-d3d-compiler
-            --no-virtualkeyboard
+            --no-compiler-runtime
+            --no-quick-import # 不复制 QtQuick 相关文件
+            --no-opengl-sw # 不复制软件 OpenGL 库
+            --no-system-d3d-compiler # 不复制 D3D 编译器
+            --no-translations # 不复制翻译文件
+            --no-qml # 不复制 QML 文件
+            --no-quick # 不复制 Quick 文件
+            --no-sql # 不复制 SQL 文件
+            --no-network # 不复制网络文件
+            --force
     )
 
     # 构建时部署
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-            COMMAND Qt6::windeployqt ${DEPLOY_ARGS} "$<TARGET_FILE:${TARGET_NAME}>"
-            COMMENT "Deploying Qt dependencies..."
+            COMMAND Qt6::windeployqt
+            ${DEPLOY_ARGS}
+            "$<TARGET_FILE:${TARGET_NAME}>"
+            COMMENT "Deploying Qt dependencies for ${TARGET_NAME}..."
     )
 
     # 安装时部署
     install(CODE "
-        execute_process(
-            COMMAND Qt6::windeployqt ${DEPLOY_ARGS}
-                \"\${CMAKE_INSTALL_PREFIX}/${RUNTIME_INSTALL_DIR}/$<TARGET_FILE_NAME:${TARGET_NAME}>\"
-        )
-    ")
+            message(STATUS \"Deploying Qt for installation of ${TARGET_NAME}...\")
+            execute_process(
+                COMMAND \"$<TARGET_FILE:Qt6::windeployqt>\"
+                    ${DEPLOY_ARGS}
+                    --dir \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}\"
+                    \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${TARGET_NAME}.exe\"
+            )
+        ")
 endfunction()
 
 

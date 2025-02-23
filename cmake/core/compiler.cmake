@@ -36,7 +36,6 @@ function(configure_compiler TARGET_NAME)
                 /utf-8
                 /MP
                 /W4
-                /WX
                 /permissive-
                 /Zc:__cplusplus
                 /Zc:preprocessor
