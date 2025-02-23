@@ -1,48 +1,50 @@
-# QT Template
+# Qt Template
 
-一个基于 Qt6 的现代化跨平台应用模板，集成了完整的构建系统和丰富的开发工具支持。
+一个现代化的 Qt6 应用程序模板，提供完整的 CMake 构建系统和开发工具链支持。
 
-## 功能特性
+[![Windows Build](https://github.com/yang1206/qt-template/actions/workflows/windows-build.yml/badge.svg)](https://github.com/yang1206/qt-template/actions/workflows/windows-build.yml)
+[![macOS Build](https://github.com/yang1206/qt-template/actions/workflows/macos-build.yml/badge.svg)](https://github.com/yang1206/qt-template/actions/workflows/macos-build.yml)
 
-- 完整的跨平台支持 (Windows, macOS, Linux)
-- 现代化的构建系统
-    - CMake 预设配置
-    - vcpkg 包管理集成
-    - ccache 编译加速支持
-    - 预编译头文件支持
-- 丰富的开发工具支持
-    - 多种构建类型支持（Debug/Release/RelWithDebInfo等）
-    - 代码分析工具集成（Address/Thread/UB Sanitizer）
-    - 代码覆盖率测试支持
-- 自动化的依赖管理
-    - Qt 组件自动配置
-    - 第三方库自动检测和链接
-    - 平台特定依赖处理
-- 完整的应用打包支持
-    - Windows (NSIS 安装包)
-    - macOS (.app 和 .dmg)
-    - Linux (DEB 和 RPM)
+## 特性
 
-## 项目结构
+- 🚀 现代化 CMake 构建系统
+  - 预设配置支持 (Windows MSVC/MinGW, macOS, Linux)
+  - vcpkg 包管理集成
+  - 多配置生成器支持
+  - 预编译头文件优化
 
-```
-├── cmake/                  # CMake模块目录
-│   ├── build_config.cmake     # 构建配置
-│   ├── packaging.cmake        # 打包配置
-│   ├── project_settings.cmake # 项目设置
-│   ├── templates/            # 模板文件
-│   └── version_control.cmake  # 版本控制
-├── 3rd/                    # 第三方库
-│   ├── elawidget/         # ElaWidget库
-│   └── qcustomplot/       # QCustomPlot库
-├── src/                    # 源代码
-├── ui/                     # UI文件
-├── res/                    # 资源文件
-│   └── icon/              # 应用图标
-├── tests/                  # 测试代码
-├── CMakeLists.txt         # 主CMake配置
-├── CMakePresets.json      # CMake预设
-└── vcpkg.json             # vcpkg依赖配置
+- 📦 完整的依赖管理
+  - Qt6 组件自动配置
+  - vcpkg 依赖自动处理
+  - 平台特定库管理
+
+- 🛠 开发工具集成
+  - ccache 编译加速
+  - IDE 工具链配置
+  - 代码分析工具支持
+
+- 📱 跨平台打包系统
+  - Windows: NSIS 安装包
+  - macOS: DMG 打包
+  - Linux: DEB/RPM 支持
+
+## 快速开始
+
+### 前置要求
+
+- CMake 3.16+
+- Qt 6.0+
+- vcpkg
+- 支持的编译器:
+  - Windows: MSVC 2019+ 或 MinGW-w64
+  - macOS: AppleClang 12.0+
+  - Linux: GCC 9.0+ 或 Clang 10.0+
+
+### 克隆项目
+
+```bash
+git clone --recursive https://github.com/yang1206/qt-template.git
+cd qt-template
 ```
 
 ## 构建类型
@@ -151,6 +153,10 @@ cmake --build --preset linux-release --target package
 - LTO 支持（Release 模式）
 - 预编译头文件支持
 - ccache 编译缓存
+
+## 开发指南
+
+详细的开发指南请参考 [开发指南文档](docs/development-guide.md)。
 
 ## 许可证
 

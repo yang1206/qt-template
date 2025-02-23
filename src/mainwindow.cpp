@@ -4,11 +4,10 @@
 #include <complex>
 #include "utils/theme_manager.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
     setWindowIcon(QIcon(":/icon/icon/windows/app.ico"));
     initializeUI();
     setupConnections();
-
     // 初始化空图表
     m_plot->replot();
     m_fftPlot->replot();
@@ -23,8 +22,8 @@ void MainWindow::initializeUI() {
     resize(800, 600);
     setStatusBar(nullptr);
     // 创建主布局
-    auto *centralWidget = new QWidget(this);
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
+    auto*        centralWidget = new QWidget(this);
+    QVBoxLayout* mainLayout    = new QVBoxLayout(centralWidget);
     mainLayout->setSpacing(10);
     mainLayout->setContentsMargins(10, 10, 10, 10);
     setCentralWidget(centralWidget);
@@ -34,7 +33,7 @@ void MainWindow::initializeUI() {
     mainLayout->addWidget(m_button);
 
     // 添加水平布局来放置两个图表
-    QHBoxLayout *plotLayout = new QHBoxLayout();
+    QHBoxLayout* plotLayout = new QHBoxLayout();
     mainLayout->addLayout(plotLayout);
 
     // 左侧时域图表
@@ -94,8 +93,8 @@ void MainWindow::updatePlot() {
     x.clear();
 
     // 清除频域图表的标签
-    QList<QCPItemText *> textLabels = m_fftPlot->findChildren<QCPItemText *>();
-    for (auto label: textLabels) {
+    QList<QCPItemText*> textLabels = m_fftPlot->findChildren<QCPItemText*>();
+    for (auto label : textLabels) {
         m_fftPlot->removeItem(label);
     }
 
@@ -107,7 +106,7 @@ void MainWindow::updatePlot() {
 
     // 生成新的数据
     double dt = 0.001;
-    double T = 20.0;
+    double T  = 20.0;
 
     for (double t = 0; t < T; t += dt) {
         x.append(t);
@@ -125,28 +124,28 @@ void MainWindow::performFFT() {
     // 检查是否有数据
     if (m_timeData.isEmpty()) {
         // 使用 ElaWidgetTools 的消息框显示警告
-        ElaMessageBar::error(ElaMessageBarType::BottomRight, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。",
-                             5000, this);
+        ElaMessageBar::error(
+            ElaMessageBarType::BottomRight, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。", 5000, this);
         return;
     }
 
     // 清除之前的频域标签
-    QList<QCPItemText *> textLabels = m_fftPlot->findChildren<QCPItemText *>();
-    for (auto label: textLabels) {
+    QList<QCPItemText*> textLabels = m_fftPlot->findChildren<QCPItemText*>();
+    for (auto label : textLabels) {
         m_fftPlot->removeItem(label);
     }
 
     int N = m_timeData.size();
 
     // 分配 FFTW 内存
-    float *in = (float *) fftwf_malloc(sizeof(float) * N);
-    fftwf_complex *out = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * (N / 2 + 1));
+    float*         in  = (float*) fftwf_malloc(sizeof(float) * N);
+    fftwf_complex* out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (N / 2 + 1));
 
     // 应用汉宁窗
     for (int i = 0; i < N; i++) {
         // 汉宁窗函数: w(n) = 0.5 * (1 - cos(2π*n/(N-1)))
         float window = 0.5 * (1.0 - cos(2.0 * M_PI * i / (N - 1)));
-        in[i] = static_cast<float>(m_timeData[i]) * window;
+        in[i]        = static_cast<float>(m_timeData[i]) * window;
     }
 
     // 创建 FFTW 计划
@@ -155,7 +154,7 @@ void MainWindow::performFFT() {
 
     // 准备频域数据
     QVector<double> frequencies, magnitudes;
-    double fs = 1.0 / 0.001; // 采样频率 = 1/dt
+    double          fs = 1.0 / 0.001; // 采样频率 = 1/dt
 
     // 计算频谱
     for (int i = 0; i < N / 2 + 1; i++) {
@@ -183,13 +182,13 @@ void MainWindow::performFFT() {
     // 更新频域图表
     m_fftPlot->graph(0)->setData(frequencies, magnitudes);
     m_fftPlot->graph(0)->setScatterStyle(
-            QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::red, 7)); // 更大的圆形标记
+        QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::red, 7)); // 更大的圆形标记
 
     // 添加峰值标签
     for (int i = 0; i < frequencies.size(); i++) {
         if (magnitudes[i] > 0.1) {
             // 只标记主要峰值
-            QCPItemText *textLabel = new QCPItemText(m_fftPlot);
+            QCPItemText* textLabel = new QCPItemText(m_fftPlot);
             textLabel->position->setType(QCPItemPosition::ptPlotCoords);
             textLabel->position->setCoords(frequencies[i], magnitudes[i] + 0.02);
             textLabel->setText(QString::number(frequencies[i], 'f', 1) + "Hz");
@@ -214,13 +213,13 @@ void MainWindow::performFFT() {
 }
 
 void MainWindow::onThemeChanged() {
-    auto &theme = ThemeManager::instance();
-    bool isDark = theme.isDarkMode();
+    auto& theme  = ThemeManager::instance();
+    bool  isDark = theme.isDarkMode();
     // 更新两个图表的主题
     QColor textColor = isDark ? Qt::white : Qt::black;
-    QColor bgColor = isDark ? QColor(32, 32, 32) : Qt::white;
+    QColor bgColor   = isDark ? QColor(32, 32, 32) : Qt::white;
 
-    auto updatePlotTheme = [textColor, bgColor](QCustomPlot *plot) {
+    auto updatePlotTheme = [textColor, bgColor](QCustomPlot* plot) {
         plot->setBackground(bgColor);
         plot->xAxis->setLabelColor(textColor);
         plot->yAxis->setLabelColor(textColor);

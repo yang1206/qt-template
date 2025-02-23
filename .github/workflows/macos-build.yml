@@ -2,7 +2,7 @@ name: macOS Build and Package
 
 on:
   push:
-    branches: [ cmake ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
