@@ -64,7 +64,7 @@ function(configure_local_libraries TARGET_NAME)
     set(LIB_NAME "elawidgettools")
     set(LIB_DIR "${ELAWIDGET_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}")
 
-    if (WIN32 AND MSVC)
+    if (WIN32)
         # 导入库路径
         set(IMPORT_LIB "${LIB_DIR}/${LIB_NAME}${LIB_IMPORT_SUFFIX}")
         # 运行时库路径

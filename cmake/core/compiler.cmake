@@ -52,7 +52,6 @@ function(configure_compiler TARGET_NAME)
                 -Wno-deprecated-declarations
                 -fdiagnostics-show-option     # 显示警告选项
                 -fdiagnostics-color=always    # 彩色输出
-                -fmacro-backtrace-limit=0     # 完整的宏回溯
         )
     endif ()
 
