@@ -13,6 +13,7 @@ function(configure_build_options)
     option(ENABLE_PCH "Enable precompiled headers" ON)
     option(ENABLE_CCACHE "Enable ccache support" ON)
     option(ENABLE_LTO "Enable Link Time Optimization in Release builds" ON)
+    option(ENABLE_QT_DEPLOY "Enable Qt deployment during development" OFF)
 
     # 检查生成器类型
     if (CMAKE_CONFIGURATION_TYPES)

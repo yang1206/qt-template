@@ -72,12 +72,14 @@ function(_configure_qt_windows_deployment TARGET_NAME)
     )
 
     # 构建时部署
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-            COMMAND Qt6::windeployqt
-            ${DEPLOY_ARGS}
-            "$<TARGET_FILE:${TARGET_NAME}>"
-            COMMENT "Deploying Qt dependencies for ${TARGET_NAME}..."
-    )
+    if(ENABLE_QT_DEPLOY)
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND Qt6::windeployqt
+                ${DEPLOY_ARGS}
+                "$<TARGET_FILE:${TARGET_NAME}>"
+                COMMENT "Deploying Qt dependencies for ${TARGET_NAME}..."
+        )
+    endif()
 
     # 安装时部署
     install(CODE "
