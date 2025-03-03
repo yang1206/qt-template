@@ -8,7 +8,9 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_MANIFEST_MODE": "ON",
-        "VCPKG_MANIFEST_INSTALL": "ON"
+        "VCPKG_MANIFEST_INSTALL": "ON",
+        "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       },
       "warnings": {
         "dev": false

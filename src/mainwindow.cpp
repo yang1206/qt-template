@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <ElaMessageBar.h>
 #include <ElaTheme.h>
-#include <complex>
+#include <fftw3.h>
 #include "utils/theme/theme_manager.h"
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new
     ThemeManager::instance().notifyThemeChange();
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() = default;
 
 void MainWindow::initializeUI() {
     // 设置窗口标题和大小
