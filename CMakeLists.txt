@@ -60,12 +60,17 @@ file(GLOB UI_FILES
 set(PROJECT_RESOURCES
         ${PROJECT_ROOT}/res/icon.qrc
         ${ELAWIDGET_ROOT}/include/ElaWidgetTools.qrc
-        src/utils/setting/settings_helper.h
 )
 
 
 # 创建目标
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${UI_FILES} ${PROJECT_RESOURCES})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${PROJECT_ROOT}/src          # 根目录
+        ${PROJECT_ROOT}/src/utils    # 工具类
+        # 其他子目录...
+)
 
 # 配置版本控制
 include(${PROJECT_ROOT}/cmake/version_control.cmake)
