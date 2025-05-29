@@ -11,6 +11,7 @@ public:
 
     // 主题切换
     enum class Type { Light, Dark, System };
+    Q_ENUM(Type)
     void setTheme(Type theme);
     Type currentTheme() const { return m_currentTheme; }
     bool isDarkMode() const { return m_isDarkMode; }

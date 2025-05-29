@@ -56,7 +56,20 @@ void ThemeManager::setTheme(Type theme) {
         return;
 
     m_currentTheme = theme;
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    if (theme == Type::Light) {
+        qApp->styleHints()->setColorScheme(Qt::ColorScheme::Light);
+    } else if (theme == Type::Dark) {
+        qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
+    } else if (theme == Type::System) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        qApp->styleHints()->unsetColorScheme();
+#else
+        Qt::ColorScheme systemScheme = d->detectSystemTheme() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
+        qApp->styleHints()->setColorScheme(systemScheme);
+#endif
+    }
+#endif
     if (theme == Type::System) {
         updateSystemTheme();
     } else {

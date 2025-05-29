@@ -64,15 +64,30 @@ function(configure_windows_installation TARGET_NAME)
 
     # 处理运行时依赖
     if (WIN32 AND MSVC)
-        # 部署 elawidgettools
-        set(LIB_NAME "elawidgettools")
-        set(RUNTIME_LIB "${ELAWIDGET_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}/${LIB_NAME}${LIB_SHARED_SUFFIX}")
-        if (EXISTS "${RUNTIME_LIB}")
-            install(FILES "${RUNTIME_LIB}"
-                    DESTINATION ${RUNTIME_INSTALL_DIR}
-                    COMPONENT Runtime
-            )
-        endif ()
+        # 部署 QWindowKit 库
+        foreach(LIB_NAME "QWKCore" "QWKWidgets")
+            # 使用Debug后缀区分库文件
+            set(RUNTIME_LIB_DEBUG "${QWINDOWKIT_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}/${LIB_NAME}d${LIB_SHARED_SUFFIX}")
+            set(RUNTIME_LIB_RELEASE "${QWINDOWKIT_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}/${LIB_NAME}${LIB_SHARED_SUFFIX}")
+
+            # 安装Debug库
+            if (EXISTS "${RUNTIME_LIB_DEBUG}")
+                install(FILES "${RUNTIME_LIB_DEBUG}"
+                        DESTINATION ${RUNTIME_INSTALL_DIR}
+                        CONFIGURATIONS Debug
+                        COMPONENT Runtime
+                )
+            endif()
+
+            # 安装Release库
+            if (EXISTS "${RUNTIME_LIB_RELEASE}")
+                install(FILES "${RUNTIME_LIB_RELEASE}"
+                        DESTINATION ${RUNTIME_INSTALL_DIR}
+                        CONFIGURATIONS Release RelWithDebInfo MinSizeRel
+                        COMPONENT Runtime
+                )
+            endif()
+        endforeach()
 
         # 部署 vcpkg 依赖
         if (VCPKG_INSTALLED_DIR)
