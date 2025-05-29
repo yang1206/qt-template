@@ -1,17 +1,19 @@
 #include "mainwindow.h"
-#include <QMessageBox>
 #include <QActionGroup>
+#include <QMessageBox>
 #include <fftw3.h>
-#include "utils/theme/theme_manager.h"
 #include "shared/widgetframe/windowframemanager.h"
+#include "utils/theme/theme_manager.h"
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
     setAttribute(Qt::WA_DontCreateNativeAncestors);
-
+#ifdef Q_OS_MAC
+    setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea, false);
+#endif
     // 创建窗口框架管理器
     m_frameManager = new WindowFrameManager(this);
     m_frameManager->setupWindowFrame();
-    
+
     initializeUI();
     setupMenus();
     setupConnections();
@@ -19,7 +21,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new
     // 初始化空图表
     m_plot->replot();
     m_fftPlot->replot();
-    
+
     // 通知主题更新
     ThemeManager::instance().notifyThemeChange();
 }
@@ -31,7 +33,7 @@ void MainWindow::initializeUI() {
     setWindowTitle("QCustomPlot Demo");
     resize(800, 600);
     setStatusBar(nullptr);
-    
+
     // 创建主布局
     auto*        centralWidget = new QWidget(this);
     QVBoxLayout* mainLayout    = new QVBoxLayout(centralWidget);
@@ -93,11 +95,12 @@ void MainWindow::initializeUI() {
 void MainWindow::setupMenus() {
     // 获取菜单栏
     QMenuBar* menuBar = m_frameManager->menuBar();
-    if (!menuBar) return;
+    if (!menuBar)
+        return;
 
     // 创建设置菜单
     auto settings = new QMenu(tr("设置(&S)"), menuBar);
-    
+
     // 添加主题切换动作
     auto darkAction = new QAction(tr("启用深色主题"), settings);
     darkAction->setCheckable(true);
@@ -106,21 +109,22 @@ void MainWindow::setupMenus() {
         m_frameManager->loadTheme(checked ? ThemeManager::Type::Dark : ThemeManager::Type::Light);
     });
     settings->addAction(darkAction);
-    
+
     // 添加平台特定的窗口效果选项
     setupWindowEffects();
-    
+
     // 将设置菜单添加到菜单栏
     menuBar->addMenu(settings);
 }
 
 void MainWindow::setupWindowEffects() {
     auto settings = m_frameManager->menuBar()->findChild<QMenu*>();
-    if (!settings) return;
+    if (!settings)
+        return;
 
 #ifdef Q_OS_WIN
     settings->addSeparator();
-    
+
     auto noneAction = new QAction(tr("无特效"), settings);
     noneAction->setData(QStringLiteral("none"));
     noneAction->setCheckable(true);
@@ -148,17 +152,17 @@ void MainWindow::setupWindowEffects() {
     winStyleGroup->addAction(acrylicAction);
     winStyleGroup->addAction(micaAction);
     winStyleGroup->addAction(micaAltAction);
-    
-    connect(winStyleGroup, &QActionGroup::triggered, this, [this, winStyleGroup](QAction *action) {
+
+    connect(winStyleGroup, &QActionGroup::triggered, this, [this, winStyleGroup](QAction* action) {
         // 先重置所有样式
-        for (const QAction *_act : winStyleGroup->actions()) {
+        for (const QAction* _act : winStyleGroup->actions()) {
             const QString data = _act->data().toString();
             if (data.isEmpty() || data == QStringLiteral("none")) {
                 continue;
             }
             m_frameManager->windowAgent()->setWindowAttribute(data, false);
         }
-        
+
         const QString data = action->data().toString();
         if (data == QStringLiteral("none")) {
             setProperty("custom-style", false);
@@ -168,7 +172,7 @@ void MainWindow::setupWindowEffects() {
         }
         style()->polish(this);
     });
-    
+
     settings->addAction(noneAction);
     settings->addAction(dwmBlurAction);
     settings->addAction(acrylicAction);
@@ -218,7 +222,7 @@ void MainWindow::setupWindowEffects() {
     macStyleGroup->addAction(darkBlurAction);
     macStyleGroup->addAction(lightBlurAction);
     macStyleGroup->addAction(noBlurAction);
-    
+
     settings->addAction(darkBlurAction);
     settings->addAction(lightBlurAction);
     settings->addAction(noBlurAction);
@@ -269,8 +273,7 @@ void MainWindow::updatePlot() {
 void MainWindow::performFFT() {
     // 检查是否有数据
     if (m_timeData.isEmpty()) {
-        QMessageBox::warning(this,
-             "错误", "FFT 功能需要数据才能正常工作，请先添加数据。");
+        QMessageBox::warning(this, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。");
         return;
     }
 
