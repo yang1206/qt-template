@@ -1,6 +1,5 @@
 #include "mainwindow.h"
-#include <ElaMessageBar.h>
-#include <ElaTheme.h>
+#include <QMessageBox>
 #include <fftw3.h>
 #include "utils/theme/theme_manager.h"
 
@@ -30,7 +29,7 @@ void MainWindow::initializeUI() {
     setCentralWidget(centralWidget);
 
     // 创建按钮
-    m_button = new ElaPushButton("更新数据", this);
+    m_button = new QPushButton("更新数据", this);
     mainLayout->addWidget(m_button);
 
     // 添加水平布局来放置两个图表
@@ -76,7 +75,7 @@ void MainWindow::initializeUI() {
     m_fftPlot->yAxis->setLabelFont(QFont("Arial", 10));
 
     // 添加 FFT 按钮
-    m_fftButton = new ElaPushButton("执行FFT", this);
+    m_fftButton = new QPushButton("执行FFT", this);
     mainLayout->addWidget(m_fftButton);
 }
 
@@ -84,8 +83,8 @@ void MainWindow::setupConnections() {
     // 连接主题变更信号
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this]() { onThemeChanged(); });
     // 连接按钮点击信号
-    connect(m_button, &ElaPushButton::clicked, this, &MainWindow::updatePlot);
-    connect(m_fftButton, &ElaPushButton::clicked, this, &MainWindow::performFFT);
+    connect(m_button, &QPushButton::clicked, this, &MainWindow::updatePlot);
+    connect(m_fftButton, &QPushButton::clicked, this, &MainWindow::performFFT);
 }
 
 void MainWindow::updatePlot() {
@@ -124,9 +123,8 @@ void MainWindow::updatePlot() {
 void MainWindow::performFFT() {
     // 检查是否有数据
     if (m_timeData.isEmpty()) {
-        // 使用 ElaWidgetTools 的消息框显示警告
-        ElaMessageBar::error(
-            ElaMessageBarType::BottomRight, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。", 5000, this);
+        QMessageBox::warning(this,
+             "错误", "FFT 功能需要数据才能正常工作，请先添加数据。");
         return;
     }
 

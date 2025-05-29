@@ -59,7 +59,6 @@ file(GLOB UI_FILES
 
 set(PROJECT_RESOURCES
         ${PROJECT_ROOT}/res/icon.qrc
-        ${ELAWIDGET_ROOT}/include/ElaWidgetTools.qrc
 )
 
 

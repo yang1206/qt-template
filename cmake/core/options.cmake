@@ -5,6 +5,7 @@ include_guard(GLOBAL)
 set(AVAILABLE_BUILD_TYPES
         Debug # 调试版本：包含调试信息，无优化
         Release # 发布版本：优化级别最高，无调试信息
+        RelWithDebInfo # 发布版本：优化级别中，包含调试信息
 )
 
 # 配置构建选项
@@ -39,18 +40,22 @@ function(configure_build_type_options TARGET_NAME)
             target_compile_options(${TARGET_NAME} PRIVATE
                     $<$<CONFIG:Debug>:/Od /Zi>
                     $<$<CONFIG:Release>:/O2>
+                    $<$<CONFIG:RelWithDebInfo>:/O2 /Zi>
             )
             target_compile_definitions(${TARGET_NAME} PRIVATE
                     $<$<CONFIG:Debug>:_DEBUG>
                     $<$<CONFIG:Release>:NDEBUG>
+                    $<$<CONFIG:RelWithDebInfo>:NDEBUG>
             )
         else ()
             target_compile_options(${TARGET_NAME} PRIVATE
                     $<$<CONFIG:Debug>:-O0 -g>
                     $<$<CONFIG:Release>:-O3>
+                    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
             )
             target_compile_definitions(${TARGET_NAME} PRIVATE
                     $<$<CONFIG:Release>:NDEBUG>
+                    $<$<CONFIG:RelWithDebInfo>:NDEBUG>
             )
         endif ()
     endif ()

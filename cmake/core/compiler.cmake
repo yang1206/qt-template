@@ -53,6 +53,9 @@ function(configure_compiler TARGET_NAME)
                 -fdiagnostics-show-option     # 显示警告选项
                 -fdiagnostics-color=always    # 彩色输出
         )
+        if(MINGW)
+        target_compile_options(${TARGET_NAME} PRIVATE -Wa,-mbig-obj)
+        endif()
     endif ()
 
     if (APPLE)

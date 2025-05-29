@@ -111,6 +111,12 @@
       "displayName": "MinGW Release"
     },
     {
+      "name": "mingw-relwithdebinfo",
+      "configurePreset": "windows-mingw",
+      "configuration": "RelWithDebInfo",
+      "displayName": "MinGW RelWithDebInfo"
+    },
+    {
       "name": "msvc-debug",
       "configurePreset": "windows-msvc",
       "configuration": "Debug",
@@ -121,6 +127,12 @@
       "configurePreset": "windows-msvc",
       "configuration": "Release",
       "displayName": "MSVC Release"
+    },
+    {
+      "name": "msvc-relwithdebinfo",
+      "configurePreset": "windows-msvc",
+      "configuration": "RelWithDebInfo",
+      "displayName": "MSVC RelWithDebInfo"
     },
     {
       "name": "macos-debug",
@@ -135,6 +147,12 @@
       "displayName": "macOS Release"
     },
     {
+      "name": "macos-relwithdebinfo",
+      "configurePreset": "macos",
+      "configuration": "RelWithDebInfo",
+      "displayName": "macOS RelWithDebInfo"
+    },
+    {
       "name": "linux-debug",
       "configurePreset": "linux",
       "configuration": "Debug",
@@ -145,6 +163,12 @@
       "configurePreset": "linux",
       "configuration": "Release",
       "displayName": "Linux Release"
+    },
+    {
+      "name": "linux-relwithdebinfo",
+      "configurePreset": "linux",
+      "configuration": "RelWithDebInfo",
+      "displayName": "Linux RelWithDebInfo"
     }
   ]
 }

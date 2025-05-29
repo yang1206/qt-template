@@ -54,11 +54,6 @@ cd qt-template
 - Debug：调试版本
 - Release：发布版本
 - RelWithDebInfo：带调试信息的发布版本
-- MinSizeRel：最小体积版本
-- Coverage：代码覆盖率测试版本
-- ASan：内存错误检测版本
-- TSan：线程错误检测版本
-- UBSan：未定义行为检测版本
 
 ## 构建步骤
 
@@ -107,7 +102,6 @@ cmake --build --preset linux-release
 ### 可选依赖
 
 - ccache (用于加速编译)
-- ElaWidget (UI 组件库)
 - QCustomPlot (图表支持)
 
 ## 版本控制

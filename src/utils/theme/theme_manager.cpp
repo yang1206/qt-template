@@ -1,7 +1,6 @@
 #include "theme_manager.h"
 #include <QApplication>
 #include <QStyleHints>
-#include "ElaTheme.h"
 
 ThemeManager &ThemeManager::instance() {
     static ThemeManager instance;
@@ -48,9 +47,7 @@ void ThemeManager::updateSystemTheme() {
             defaultPalette.color(QPalette::WindowText).lightness() > defaultPalette.color(QPalette::Window).lightness();
 #endif
 
-    if (m_currentTheme == Type::System) {
-        eTheme->setThemeMode(isDark ? ElaThemeType::Dark : ElaThemeType::Light);
-    }
+
     applyTheme(isDark);
 }
 
@@ -69,7 +66,5 @@ void ThemeManager::setTheme(Type theme) {
 
 void ThemeManager::applyTheme(bool isDark) {
     m_isDarkMode = isDark;
-    eTheme->setThemeMode(isDark ? ElaThemeType::Dark : ElaThemeType::Light);
-
     emit themeChanged();
 }

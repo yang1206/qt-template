@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <qcustomplot.h>
-#include <ElaPushButton.h>
+#include <QPushButton>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -25,8 +25,8 @@ class MainWindow : public QMainWindow {
   private:
     QCustomPlot*    m_plot;
     QCustomPlot*    m_fftPlot;
-    ElaPushButton*  m_button;
-    ElaPushButton*  m_fftButton;
+    QPushButton*  m_button;
+    QPushButton*  m_fftButton;
     QTimer*         m_updateTimer;
     QVector<double> m_timeData;
     QVector<double> x;

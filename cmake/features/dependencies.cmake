@@ -60,45 +60,7 @@ endfunction()
 
 # 配置本地库文件
 function(configure_local_libraries TARGET_NAME)
-    if (NOT DEFINED ELAWIDGET_ROOT)
-        message(FATAL_ERROR "ELAWIDGET_ROOT is not defined")
-    endif ()
 
-    set(LIB_NAME "elawidgettools")
-    set(LIB_DIR "${ELAWIDGET_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}")
-
-    if (WIN32)
-        # 导入库路径
-        set(IMPORT_LIB "${LIB_DIR}/${LIB_NAME}${LIB_IMPORT_SUFFIX}")
-        # 运行时库路径
-        set(RUNTIME_LIB "${LIB_DIR}/${LIB_NAME}${LIB_SHARED_SUFFIX}")
-
-        if (NOT EXISTS "${IMPORT_LIB}")
-            message(FATAL_ERROR "Import library not found: ${IMPORT_LIB}")
-        endif ()
-
-        if (NOT EXISTS "${RUNTIME_LIB}")
-            message(FATAL_ERROR "Runtime library not found: ${RUNTIME_LIB}")
-        endif ()
-
-        # 链接导入库
-        target_link_libraries(${TARGET_NAME} PRIVATE "${IMPORT_LIB}")
-
-        # 复制运行时DLL到输出目录
-        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${RUNTIME_LIB}"
-                "$<TARGET_FILE_DIR:${TARGET_NAME}>"
-                COMMENT "Copying ${LIB_NAME} runtime library"
-        )
-    else ()
-        # 其他平台的处理保持不变
-        get_platform_library_name(${LIB_NAME} LIB_PATH)
-        set(LIB_PATH "${LIB_DIR}/${LIB_PATH}")
-        if (EXISTS "${LIB_PATH}")
-            target_link_libraries(${TARGET_NAME} PRIVATE "${LIB_PATH}")
-        endif ()
-    endif ()
 endfunction()
 
 
@@ -121,7 +83,6 @@ function(configure_local_dependencies TARGET_NAME)
     # 为第三方库添加 SYSTEM 包含目录，抑制警告
     target_include_directories(${TARGET_NAME} SYSTEM PRIVATE
             ${THIRD_PARTY_ROOT}/qcustomplot
-            ${ELAWIDGET_ROOT}/include
     )
 
     # 为特定源文件禁用警告
