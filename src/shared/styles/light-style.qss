@@ -34,8 +34,8 @@ QWK--WindowBar>QAbstractButton[system-button=true] {
 }
 
 QWK--WindowBar>QAbstractButton#pin-button {
-    qproperty-iconNormal: url(":/window-bar/pin.svg");
-    qproperty-iconChecked: url(":/window-bar/pin-fill.svg");
+    qproperty-iconNormal: url(":/window-bar/pin_light.svg");
+    qproperty-iconChecked: url(":/window-bar/pin-fill_light.svg");
     qproperty-iconSize: 15px 15px;
 }
 
@@ -45,7 +45,7 @@ QWK--WindowBar>QAbstractButton#pin-button:pressed {
 }
 
 QWK--WindowBar>QAbstractButton#min-button {
-    qproperty-iconNormal: url(":/window-bar/minimize.svg");
+    qproperty-iconNormal: url(":/window-bar/minimize_light.svg");
 }
 
 QWK--WindowBar>QAbstractButton#min-button:hover,
@@ -54,8 +54,8 @@ QWK--WindowBar>QAbstractButton#min-button:pressed {
 }
 
 QWK--WindowBar>QAbstractButton#max-button {
-    qproperty-iconNormal: url(":/window-bar/maximize.svg");
-    qproperty-iconChecked: url(":/window-bar/restore.svg");
+    qproperty-iconNormal: url(":/window-bar/maximize_light.svg");
+    qproperty-iconChecked: url(":/window-bar/restore_light.svg");
 }
 
 QWK--WindowBar>QAbstractButton#max-button:hover,
@@ -64,7 +64,7 @@ QWK--WindowBar>QAbstractButton#max-button:pressed {
 }
 
 QWK--WindowBar>QAbstractButton#close-button {
-    qproperty-iconNormal: url(":/window-bar/close.svg");
+    qproperty-iconNormal: url(":/window-bar/close_light.svg");
 }
 
 QWK--WindowBar>QAbstractButton#close-button:hover,
@@ -93,7 +93,7 @@ QMenuBar {
 }
 
 QMenuBar>QToolButton#qt_menubar_ext_button {
-    qproperty-icon: url(":/window-bar/more-line.svg");
+    qproperty-icon: url(":/window-bar/more-line_light.svg");
 }
 
 QMenuBar>QToolButton#qt_menubar_ext_button:hover,
@@ -102,7 +102,6 @@ QMenuBar>QToolButton#qt_menubar_ext_button:pressed {
 }
 
 QMenuBar::item {
-    color: #EEEEEE;
     border: none;
     padding: 8px 12px;
 }
