@@ -1,10 +1,12 @@
 #include "mainwindow.h"
 #include <QActionGroup>
 #include <QMessageBox>
+#include <QQmlContext>
+
+#include <QQuickWidget>
 #include <fftw3.h>
 #include "shared/widgetframe/windowframemanager.h"
 #include "utils/theme/theme_manager.h"
-
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
     setAttribute(Qt::WA_DontCreateNativeAncestors);
 #ifdef Q_OS_MAC
@@ -90,6 +92,15 @@ void MainWindow::initializeUI() {
     // 添加 FFT 按钮
     m_fftButton = new QPushButton("执行FFT", this);
     mainLayout->addWidget(m_fftButton);
+     auto  m_qmlPanel = new QQuickWidget(this);
+    m_qmlPanel->setResizeMode(QQuickWidget::SizeRootObjectToView);
+
+    // 将MainWindow暴露给QML
+    m_qmlPanel->rootContext()->setContextProperty("mainWindow", this);
+
+    // 加载QML文件
+    m_qmlPanel->setSource(QUrl("qrc:/qml/MyCustomWidget.qml"));
+    mainLayout->addWidget(m_qmlPanel);
 }
 
 void MainWindow::setupMenus() {

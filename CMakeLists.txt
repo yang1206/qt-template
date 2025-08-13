@@ -64,6 +64,8 @@ set(PROJECT_RESOURCES
         ${PROJECT_ROOT}/src/shared/resources/shared.qrc
         ${PROJECT_ROOT}/style/style.qrc
         ${PROJECT_ROOT}/src/shared/styles/style.qrc
+        ${PROJECT_ROOT}/src/qml/qml.qrc
+
 )
 
 

@@ -7,6 +7,10 @@ set(QT_COMPONENTS
         Widgets
         Gui
         PrintSupport
+        Concurrent
+        Quick
+        QuickWidgets
+        QuickControls2
 )
 
 # 配置 Qt 自动工具
@@ -14,7 +18,7 @@ function(configure_qt_tools)
     set(CMAKE_AUTOUIC ON PARENT_SCOPE)
     set(CMAKE_AUTOMOC ON PARENT_SCOPE)
     set(CMAKE_AUTORCC ON PARENT_SCOPE)
-
+    set(CMAKE_AUTOMOC_PATH_PREFIX ON)
     set(CMAKE_AUTOUIC_SEARCH_PATHS
             ${PROJECT_ROOT}/ui
             ${PROJECT_ROOT}/src
@@ -60,12 +64,10 @@ function(_configure_qt_windows_deployment TARGET_NAME)
     set(DEPLOY_ARGS
             --verbose 2
             --no-compiler-runtime
-            --no-quick-import # 不复制 QtQuick 相关文件
+            # --no-quick-import # 现在我们使用QML，所以需要Quick相关文件
             --no-opengl-sw # 不复制软件 OpenGL 库
             --no-system-d3d-compiler # 不复制 D3D 编译器
             --no-translations # 不复制翻译文件
-            --no-qml # 不复制 QML 文件
-            --no-quick # 不复制 Quick 文件
             --no-sql # 不复制 SQL 文件
             --no-network # 不复制网络文件
             --force
