@@ -1,16 +1,28 @@
 #include "mainwindow.h"
+#include <QActionGroup>
 #include <QMessageBox>
 #include <fftw3.h>
+#include "shared/widgetframe/windowframemanager.h"
 #include "utils/theme/theme_manager.h"
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), m_updateTimer(new QTimer(this)) {
-    setWindowIcon(QIcon(":/icon/icon/windows/app.ico"));
+    setAttribute(Qt::WA_DontCreateNativeAncestors);
+#ifdef Q_OS_MAC
+    setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea, false);
+#endif
+    // 创建窗口框架管理器
+    m_frameManager = new WindowFrameManager(this);
+    m_frameManager->setupWindowFrame();
+
     initializeUI();
+    setupMenus();
     setupConnections();
 
     // 初始化空图表
     m_plot->replot();
     m_fftPlot->replot();
+
+    // 通知主题更新
     ThemeManager::instance().notifyThemeChange();
 }
 
@@ -18,9 +30,10 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::initializeUI() {
     // 设置窗口标题和大小
-    setWindowTitle("ElaWidgetTools & QCustomPlot Demo");
+    setWindowTitle("QCustomPlot Demo");
     resize(800, 600);
     setStatusBar(nullptr);
+
     // 创建主布局
     auto*        centralWidget = new QWidget(this);
     QVBoxLayout* mainLayout    = new QVBoxLayout(centralWidget);
@@ -79,9 +92,146 @@ void MainWindow::initializeUI() {
     mainLayout->addWidget(m_fftButton);
 }
 
+void MainWindow::setupMenus() {
+    // 获取菜单栏
+    QMenuBar* menuBar = m_frameManager->menuBar();
+    if (!menuBar)
+        return;
+
+    // 创建设置菜单
+    auto settings = new QMenu(tr("设置(&S)"), menuBar);
+
+    // 添加主题切换动作
+    auto darkAction = new QAction(tr("启用深色主题"), settings);
+    darkAction->setCheckable(true);
+    darkAction->setChecked(ThemeManager::instance().isDarkMode());
+    connect(darkAction, &QAction::triggered, this, [this](bool checked) {
+        m_frameManager->loadTheme(checked ? ThemeManager::Type::Dark : ThemeManager::Type::Light);
+    });
+    settings->addAction(darkAction);
+
+    // 添加平台特定的窗口效果选项
+    setupWindowEffects();
+
+    // 将设置菜单添加到菜单栏
+    menuBar->addMenu(settings);
+}
+
+void MainWindow::setupWindowEffects() {
+    auto settings = m_frameManager->menuBar()->findChild<QMenu*>();
+    if (!settings)
+        return;
+
+#ifdef Q_OS_WIN
+    settings->addSeparator();
+
+    auto noneAction = new QAction(tr("无特效"), settings);
+    noneAction->setData(QStringLiteral("none"));
+    noneAction->setCheckable(true);
+    noneAction->setChecked(true);
+
+    auto dwmBlurAction = new QAction(tr("DWM模糊"), settings);
+    dwmBlurAction->setData(QStringLiteral("dwm-blur"));
+    dwmBlurAction->setCheckable(true);
+
+    auto acrylicAction = new QAction(tr("亚克力效果"), settings);
+    acrylicAction->setData(QStringLiteral("acrylic-material"));
+    acrylicAction->setCheckable(true);
+
+    auto micaAction = new QAction(tr("云母效果"), settings);
+    micaAction->setData(QStringLiteral("mica"));
+    micaAction->setCheckable(true);
+
+    auto micaAltAction = new QAction(tr("替代云母效果"), settings);
+    micaAltAction->setData(QStringLiteral("mica-alt"));
+    micaAltAction->setCheckable(true);
+
+    auto winStyleGroup = new QActionGroup(settings);
+    winStyleGroup->addAction(noneAction);
+    winStyleGroup->addAction(dwmBlurAction);
+    winStyleGroup->addAction(acrylicAction);
+    winStyleGroup->addAction(micaAction);
+    winStyleGroup->addAction(micaAltAction);
+
+    connect(winStyleGroup, &QActionGroup::triggered, this, [this, winStyleGroup](QAction* action) {
+        // 先重置所有样式
+        for (const QAction* _act : winStyleGroup->actions()) {
+            const QString data = _act->data().toString();
+            if (data.isEmpty() || data == QStringLiteral("none")) {
+                continue;
+            }
+            m_frameManager->windowAgent()->setWindowAttribute(data, false);
+        }
+
+        const QString data = action->data().toString();
+        if (data == QStringLiteral("none")) {
+            setProperty("custom-style", false);
+        } else if (!data.isEmpty()) {
+            m_frameManager->windowAgent()->setWindowAttribute(data, true);
+            setProperty("custom-style", true);
+        }
+        style()->polish(this);
+    });
+
+    settings->addAction(noneAction);
+    settings->addAction(dwmBlurAction);
+    settings->addAction(acrylicAction);
+    settings->addAction(micaAction);
+    settings->addAction(micaAltAction);
+#endif
+
+#ifdef Q_OS_MAC
+    // macOS特有的模糊效果选项
+    auto darkBlurAction = new QAction(tr("深色模糊"), settings);
+    darkBlurAction->setCheckable(true);
+    connect(darkBlurAction, &QAction::toggled, this, [this](bool checked) {
+        if (!m_frameManager->windowAgent()->setWindowAttribute(QStringLiteral("blur-effect"), "dark")) {
+            return;
+        }
+        if (checked) {
+            setProperty("custom-style", true);
+            style()->polish(this);
+        }
+    });
+
+    auto lightBlurAction = new QAction(tr("浅色模糊"), settings);
+    lightBlurAction->setCheckable(true);
+    connect(lightBlurAction, &QAction::toggled, this, [this](bool checked) {
+        if (!m_frameManager->windowAgent()->setWindowAttribute(QStringLiteral("blur-effect"), "light")) {
+            return;
+        }
+        if (checked) {
+            setProperty("custom-style", true);
+            style()->polish(this);
+        }
+    });
+
+    auto noBlurAction = new QAction(tr("无模糊"), settings);
+    noBlurAction->setCheckable(true);
+    connect(noBlurAction, &QAction::toggled, this, [this](bool checked) {
+        if (!m_frameManager->windowAgent()->setWindowAttribute(QStringLiteral("blur-effect"), "none")) {
+            return;
+        }
+        if (checked) {
+            setProperty("custom-style", false);
+            style()->polish(this);
+        }
+    });
+
+    auto macStyleGroup = new QActionGroup(settings);
+    macStyleGroup->addAction(darkBlurAction);
+    macStyleGroup->addAction(lightBlurAction);
+    macStyleGroup->addAction(noBlurAction);
+
+    settings->addAction(darkBlurAction);
+    settings->addAction(lightBlurAction);
+    settings->addAction(noBlurAction);
+#endif
+}
+
 void MainWindow::setupConnections() {
     // 连接主题变更信号
-    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this]() { onThemeChanged(); });
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, &MainWindow::onThemeChanged);
     // 连接按钮点击信号
     connect(m_button, &QPushButton::clicked, this, &MainWindow::updatePlot);
     connect(m_fftButton, &QPushButton::clicked, this, &MainWindow::performFFT);
@@ -123,8 +273,7 @@ void MainWindow::updatePlot() {
 void MainWindow::performFFT() {
     // 检查是否有数据
     if (m_timeData.isEmpty()) {
-        QMessageBox::warning(this,
-             "错误", "FFT 功能需要数据才能正常工作，请先添加数据。");
+        QMessageBox::warning(this, "错误", "FFT 功能需要数据才能正常工作，请先添加数据。");
         return;
     }
 

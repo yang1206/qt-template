@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>window-bar/close.svg</file>
+        <file>window-bar/fullscreen.svg</file>
+        <file>window-bar/maximize.svg</file>
+        <file>window-bar/minimize.svg</file>
+        <file>window-bar/restore.svg</file>
+        <file>window-bar/more-line.svg</file>
+        <file>window-bar/pin.svg</file>
+        <file>window-bar/pin-fill.svg</file>
+        <file>window-bar/close_light.svg</file>
+        <file>window-bar/fullscreen_light.svg</file>
+        <file>window-bar/maximize_light.svg</file>
+        <file>window-bar/minimize_light.svg</file>
+        <file>window-bar/restore_light.svg</file>
+        <file>window-bar/more-line_light.svg</file>
+        <file>window-bar/pin_light.svg</file>
+        <file>window-bar/pin-fill_light.svg</file>
+    </qresource>
+</RCC>

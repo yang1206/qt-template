@@ -12,7 +12,7 @@ project(QT_Template
 # 设置基本变量
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(THIRD_PARTY_ROOT ${PROJECT_ROOT}/3rd)
-set(ELAWIDGET_ROOT ${THIRD_PARTY_ROOT}/elawidget)
+set(QWINDOWKIT_ROOT ${THIRD_PARTY_ROOT}/qwindowkit)
 
 # 设置版本信息变量
 set(VERSION_PROJECT_NAME ${PROJECT_NAME})
@@ -52,6 +52,8 @@ file(GLOB_RECURSE PROJECT_SOURCES
         "${THIRD_PARTY_ROOT}/qcustomplot/*.h"
 )
 
+
+
 file(GLOB UI_FILES
         "${PROJECT_ROOT}/ui/*.ui"
         "${PROJECT_ROOT}/src/*.ui"
@@ -59,6 +61,9 @@ file(GLOB UI_FILES
 
 set(PROJECT_RESOURCES
         ${PROJECT_ROOT}/res/icon.qrc
+        ${PROJECT_ROOT}/src/shared/resources/shared.qrc
+        ${PROJECT_ROOT}/style/style.qrc
+        ${PROJECT_ROOT}/src/shared/styles/style.qrc
 )
 
 
