@@ -1,11 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QPushButton>
 #include <QCustomPlot.h>
+#include "QtNativeUI/NMainWindow.h"
 
-class MainWindow : public QMainWindow {
+class NPushButton;
+class MainWindow : public NMainWindow {
     Q_OBJECT
 
   public:
@@ -14,7 +14,7 @@ class MainWindow : public QMainWindow {
 
   private slots:
     void updatePlot();
-    void onThemeChanged();
+    void onThemeChanged(bool dark);
     void performFFT();
 
   private:
@@ -24,11 +24,11 @@ class MainWindow : public QMainWindow {
   private:
     QCustomPlot*      m_plot;
     QCustomPlot*      m_fftPlot;
-    QPushButton*      m_button;
-    QPushButton*      m_fftButton;
+    NPushButton*      m_button;
+    NPushButton*      m_fftButton;
     QTimer*           m_updateTimer;
-    QVector<double>   m_timeData;
-    QVector<double>   x;
+    QList<double>   m_timeData;
+    QList<double>   x;
 };
 
 #endif // MAINWINDOW_H

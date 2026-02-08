@@ -24,6 +24,8 @@ endfunction()
 
 # 配置编译器选项
 function(configure_compiler TARGET_NAME)
+    check_compiler_version()
+
     set_target_properties(${TARGET_NAME} PROPERTIES
             CXX_STANDARD 20 # 使用 C++20 标准
             CXX_STANDARD_REQUIRED ON # 强制要求 C++20

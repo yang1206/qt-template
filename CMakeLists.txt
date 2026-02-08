@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 cmake_policy(SET CMP0077 NEW)
 
 # 项目基本信息
-project(QT_Template
+project(Qt-Template
         VERSION 0.1.0
         DESCRIPTION "Qt Application Template"
         LANGUAGES CXX
@@ -19,6 +19,13 @@ set(VERSION_PROJECT_VERSION ${PROJECT_VERSION})
 set(VERSION_BUILD_TYPE "$<CONFIG>")
 set(VERSION_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
 set(VERSION_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION})
+
+# 构建选项
+option(ENABLE_PCH "Enable precompiled headers" ON)
+option(ENABLE_CCACHE "Enable ccache support" ON)
+option(ENABLE_LTO "Enable Link Time Optimization in Release builds" ON)
+option(ENABLE_QT_DEPLOY "Enable Qt deployment during development" OFF)
+option(BUILD_TESTS "Build tests" OFF)
 
 #加载平台相关配置
 include(${PROJECT_ROOT}/cmake/core/platform.cmake)
@@ -41,22 +48,9 @@ if (ENABLE_CCACHE)
     configure_ccache()
 endif ()
 
+# 加载源文件列表
+include(${PROJECT_ROOT}/cmake/sources.cmake)
 
-# 收集源文件
-file(GLOB_RECURSE PROJECT_SOURCES
-        CONFIGURE_DEPENDS
-        "${PROJECT_ROOT}/src/*.cpp"
-        "${PROJECT_ROOT}/src/*.h"
-        "${THIRD_PARTY_ROOT}/qcustomplot/*.cpp"
-        "${THIRD_PARTY_ROOT}/qcustomplot/*.h"
-)
-
-
-
-file(GLOB UI_FILES
-        "${PROJECT_ROOT}/ui/*.ui"
-        "${PROJECT_ROOT}/src/*.ui"
-)
 
 set(PROJECT_RESOURCES
         ${PROJECT_ROOT}/res/icon.qrc
@@ -65,7 +59,7 @@ set(PROJECT_RESOURCES
 
 
 # 创建目标
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${UI_FILES} ${PROJECT_RESOURCES})
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_RESOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${PROJECT_ROOT}/src          # 根目录
@@ -99,7 +93,6 @@ endif ()
 configure_compiler(${PROJECT_NAME})
 configure_platform_options(${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${QT_TARGETS})
 
 #配置依赖（Qt已经配置，这里是其他依赖）
 include(${PROJECT_ROOT}/cmake/features/dependencies.cmake)

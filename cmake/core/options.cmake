@@ -10,12 +10,6 @@ set(AVAILABLE_BUILD_TYPES
 
 # 配置构建选项
 function(configure_build_options)
-    # 基础选项
-    option(ENABLE_PCH "Enable precompiled headers" ON)
-    option(ENABLE_CCACHE "Enable ccache support" ON)
-    option(ENABLE_LTO "Enable Link Time Optimization in Release builds" ON)
-    option(ENABLE_QT_DEPLOY "Enable Qt deployment during development" OFF)
-
     # 检查生成器类型
     if (CMAKE_CONFIGURATION_TYPES)
         # 多配置生成器（如 Visual Studio, Ninja Multi-Config）
@@ -29,34 +23,5 @@ function(configure_build_options)
             set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build" FORCE)
         endif ()
         set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${AVAILABLE_BUILD_TYPES})
-    endif ()
-endfunction()
-
-# 配置构建类型特定选项
-function(configure_build_type_options TARGET_NAME)
-    get_target_property(TARGET_TYPE ${TARGET_NAME} TYPE)
-    if (NOT TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
-        if (MSVC)
-            target_compile_options(${TARGET_NAME} PRIVATE
-                    $<$<CONFIG:Debug>:/Od /Zi>
-                    $<$<CONFIG:Release>:/O2>
-                    $<$<CONFIG:RelWithDebInfo>:/O2 /Zi>
-            )
-            target_compile_definitions(${TARGET_NAME} PRIVATE
-                    $<$<CONFIG:Debug>:_DEBUG>
-                    $<$<CONFIG:Release>:NDEBUG>
-                    $<$<CONFIG:RelWithDebInfo>:NDEBUG>
-            )
-        else ()
-            target_compile_options(${TARGET_NAME} PRIVATE
-                    $<$<CONFIG:Debug>:-O0 -g>
-                    $<$<CONFIG:Release>:-O3>
-                    $<$<CONFIG:RelWithDebInfo>:-O2 -g>
-            )
-            target_compile_definitions(${TARGET_NAME} PRIVATE
-                    $<$<CONFIG:Release>:NDEBUG>
-                    $<$<CONFIG:RelWithDebInfo>:NDEBUG>
-            )
-        endif ()
     endif ()
 endfunction()

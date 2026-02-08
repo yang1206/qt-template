@@ -47,13 +47,19 @@ function(configure_fetchcontent_dependencies TARGET_NAME)
             GIT_TAG 9.1.0
     )
 
-
     # 使用 FetchContent_MakeAvailable 获取所有声明的依赖
     FetchContent_MakeAvailable(fmt)
 
+    FetchContent_Declare(
+            QtNativeUI
+            GIT_REPOSITORY https://github.com/yang1206/QtNativeUI
+            GIT_TAG dev
+    )
+    FetchContent_MakeAvailable(QtNativeUI)
+
     # 链接 FetchContent 依赖
     if (TARGET fmt::fmt)
-        target_link_libraries(${TARGET_NAME} PRIVATE fmt::fmt)
+        target_link_libraries(${TARGET_NAME} PRIVATE fmt::fmt QtNativeUI::QtNativeUI)
     endif ()
 endfunction()
 
@@ -91,7 +97,4 @@ function(configure_local_dependencies TARGET_NAME)
                 PROPERTIES COMPILE_FLAGS "/wd4458 /wd4996 /wd4702"
         )
     endif ()
-
-    # 配置本地库文件
-    configure_local_libraries(${TARGET_NAME})
 endfunction()

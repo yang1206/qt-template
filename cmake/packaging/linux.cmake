@@ -20,16 +20,6 @@ function(configure_linux_installation TARGET_NAME)
             DESTINATION "share/applications"
     )
 
-    # 处理运行时依赖
-    get_platform_library_name("elawidgettools" RUNTIME_LIB)
-    set(RUNTIME_LIB_PATH "${ELAWIDGET_ROOT}/lib/${PLATFORM_SPECIFIC_DIR}/${RUNTIME_LIB}")
-
-    if (EXISTS "${RUNTIME_LIB_PATH}")
-        install(FILES "${RUNTIME_LIB_PATH}"
-                DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                COMPONENT Runtime
-        )
-    endif ()
 
     # 部署 Qt 依赖
     if (Qt6_FOUND)

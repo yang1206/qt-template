@@ -1,5 +1,5 @@
+#include "QtNativeUI/NConfig.h"
 #include "mainwindow.h"
-#include "utils/theme/theme_manager.h"
 
 void setupStyle() {
     // 设置默认样式
@@ -21,9 +21,11 @@ void setupStyle() {
 
 int main(int argc, char* argv[]) {
     QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication a(argc, argv);
+    nConfig->initialize();
     setupStyle();
-    ThemeManager::instance();
+
     MainWindow w;
     w.show();
     return a.exec();
